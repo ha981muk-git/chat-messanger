@@ -1,2 +1,19 @@
 \newpage
 \chapter{Implementation}
+\section{Problem}
+
+
+Forward the message to the specified client.
+With the help of java suckt it is possible to establish a connection between the server and a client. Through this connection the client and the server can communicate with each other. 
+The client can send a message to the server, and the server can also reply to the client and send retransmissions.
+
+The difficulty is that the client sends the messages to the other client. 
+In this case, the message must be sent from the first client to the server, and then the messages must be forwarded from the server to the correct client. 
+After that, the other client must send the response back to the first client via the server.
+
+\section{Solution}
+
+
+After a lot of thinking, a solution was found to use the Thread class.
+The thread class must be implemented for client and server, so that the server receives the messages from the first client and at the same time forwards them to the right client and vice Versa.
+the thread for the client starts to call the method onReceive as rekrusion so that the client is always ready to receive the messages
