@@ -1,0 +1,68 @@
+\RequirePackage{silence} % :-\
+    \WarningFilter{scrreprt}{Usage of package `titlesec'}
+    %\WarningFilter{scrreprt}{Activating an ugly workaround}
+    \WarningFilter{titlesec}{Non standard sectioning command detected}
+\documentclass[ openright,titlepage,numbers=noenddot,headinclude,%twoside, %1headlines,% letterpaper a4paper
+                footinclude=true,cleardoublepage=empty,abstractoff, % <--- obsolete, remove (todo)
+                BCOR=5mm,paper=a4,fontsize=11pt,%11pt,a4paper,%
+                ngerman,american,%lockflag%
+                ]{scrreprt}
+%*************************************************************************
+% Note: Make all your adjustments in here
+%*************************************************************************
+\input{config/hdathesis-config}
+\input{config/classicthesis-config}
+%*************************************************************************
+% Bibliographies
+%*************************************************************************
+\addbibresource{bibliography.bib}
+%*************************************************************************
+% GO!GO!GO! MOVE IT!
+%*************************************************************************
+\begin{document}
+\frenchspacing
+\raggedbottom{}
+\selectlanguage{american} % ngerman, american
+%\renewcommand*{\bibname}{new name}
+%\setbibpreamble{}
+\pagenumbering{roman}
+\pagestyle{plain}
+%*************************************************************************
+% Frontmatter
+%*************************************************************************
+\include{frontbackmatter/Titlepage/Titlepage}
+\include{frontbackmatter/Titlepage/Titleback}
+%\cleardoublepage
+\include{frontbackmatter/Declaration/Declaration}
+%\cleardoublepage\include{frontbackmatter/Foreword}
+%\cleardoublepage\include{frontbackmatter/Declaration}
+%\condLOCK{\cleardoublepage\include{frontbackmatter/BlockingNotice/BlockingNotice}}
+%\cleardoublepage\include{frontbackmatter/Abstract/AbstractEN}
+%\cleardoublepage\include{frontbackmatter/AbstractDE}
+%\cleardoublepage\include{frontbackmatter/Publications}
+\cleardoublepage\include{frontbackmatter/Acknowledgments/Acknowledgments}
+\cleardoublepage\include{frontbackmatter/Contents/Contents}
+%\cleardoublepage\include{frontbackmatter/Figures}
+%\cleardoublepage\include{frontbackmatter/Tables}
+%\cleardoublepage\include{frontbackmatter/Listings}
+\cleardoublepage\include{frontbackmatter/Acronyms/Acronyms}
+%*************************************************************************
+% Mainmatter
+%*************************************************************************
+% Always use \cleardoublepage before \part{...}.
+\cleardoublepage{}
+\include{frontbackmatter/Introduction/Introduction}
+\cleardoublepage{}
+\include{frontbackmatter/Theory/Theory}
+\cleardoublepage{}
+\include{frontbackmatter/Implementation/Implementation}
+\cleardoublepage{}
+\include{frontbackmatter/Improvement/Improvement}
+%*************************************************************************
+% Other Stuff in the Back
+%*************************************************************************
+\cleardoublepage{}
+\include{frontbackmatter/Bibliography/Bibliography}
+%*************************************************************************
+\end{document}
+%*************************************************************************
