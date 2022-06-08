@@ -1,4 +1,4 @@
-package edu.fra.uas.chat;
+package edu.fra.uas.net.chat;
 
 import java.io.IOException;
 
