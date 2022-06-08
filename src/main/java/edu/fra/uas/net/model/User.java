@@ -13,6 +13,7 @@ import java.io.Serializable;
  */
 public class User implements Serializable {
 
+	private static final long serialVersionUID = 2939221647535002673L;
 	private String username;
 	private String host;
 	private int port;
