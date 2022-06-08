@@ -1,5 +1,11 @@
 package edu.fra.uas.net.utill;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
 /**
  * This Class converts object to byte[] and byte[] to object
  *
