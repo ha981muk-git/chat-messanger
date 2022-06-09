@@ -14,6 +14,8 @@ import javax.swing.JTable;
 import java.awt.Color;
 import javax.swing.UIManager;
 import java.awt.Font;
+import java.awt.Toolkit;
+
 import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
 
@@ -27,6 +29,9 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenu;
 import javax.swing.JCheckBox;
 import javax.swing.JMenuItem;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.WindowEvent;
 
 public class Server extends JFrame {
 
@@ -73,6 +78,19 @@ public class Server extends JFrame {
 		menuBar.add(mnNewMenu);
 		
 		JMenuItem mntmNewMenuItem = new JMenuItem("Exit");
+		mntmNewMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				close();
+			}
+		});
+		mntmNewMenuItem.addMouseListener(new MouseAdapter() {
+			
+			@Override
+			public void mouseClicked(MouseEvent e) {
+			}
+			
+			
+		});
 		mnNewMenu.add(mntmNewMenuItem);
 		
 		JMenu mnNewMenu_1 = new JMenu("Help");
@@ -182,5 +200,11 @@ public class Server extends JFrame {
 
 		table.setModel(tableModel);
 
+	}
+	
+	public void close() {
+		WindowEvent closeWindo = new WindowEvent(this , WindowEvent.WINDOW_CLOSING );
+		Toolkit.getDefaultToolkit().getSystemEventQueue().postEvent(closeWindo);
+		
 	}
 }
