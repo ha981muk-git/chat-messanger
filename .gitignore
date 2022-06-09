@@ -221,14 +221,15 @@ gradle-app.setting
 # JDT-specific (Eclipse Java Development Tools)
 
 # End of https://www.toptal.com/developers/gitignore/api/java,eclipse,intellij,visualstudiocode,macos,maven,gradle
-doc/.vscode/*
-doc/logs
-doc/*.aux
-doc/*.xml
+.vscode/*
+logs
+*.aux
+*.xml
 doc/thesis.synctex.gz
-doc/*.out
-doc/*.fls
-doc/*.fdb_latexmk
-doc/*.bbl
-doc/*.blg
-.idea/*
+*.out
+*.fls
+*.fdb_latexmk
+*.bbl
+*.blg
+.idea
+*.toc
