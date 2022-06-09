@@ -9,6 +9,8 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.JMenuBar;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.AbstractButton;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
@@ -31,6 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import javax.swing.JRadioButton;
 
 public class Server extends JFrame {
 
@@ -50,6 +53,7 @@ public class Server extends JFrame {
 	private final JTextField textField_1 = new JTextField();
 	private final JScrollPane scrollPane = new JScrollPane();
 	private final JTable table = new JTable();
+	private final JButton btnNewButton_1_1 = new JButton("Delete");
 
 	/**
 	 * Launch the application.
@@ -79,6 +83,7 @@ public class Server extends JFrame {
 		initGUI();
 	}
 	private void initGUI() {
+		setResizable(false);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 682, 360);
 		
@@ -87,7 +92,13 @@ public class Server extends JFrame {
 		menuBar.add(mnNewMenu);
 		mntmNewMenuItem_1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				close();
+				int dialogButton = JOptionPane.YES_NO_OPTION;
+				int dialogResult = JOptionPane.showConfirmDialog(null, "Do you want to close the Server ?", "Exit Server", dialogButton);
+				if(dialogResult == 0) {
+					dispose();
+					System.exit(NORMAL);
+				}
+				
 			}
 		});
 		
@@ -101,28 +112,28 @@ public class Server extends JFrame {
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
-		btnNewButton.setBounds(10, 11, 114, 23);
+		btnNewButton.setBounds(36, 11, 114, 23);
 		
 		contentPane.add(btnNewButton);
-		btnNewButton_1.setBounds(131, 11, 89, 23);
+		btnNewButton_1.setBounds(166, 11, 89, 23);
 		
 		contentPane.add(btnNewButton_1);
-		lblNewLabel.setBounds(230, 15, 114, 19);
+		lblNewLabel.setBounds(265, 13, 114, 19);
 		
 		contentPane.add(lblNewLabel);
 		textField.setColumns(10);
-		textField.setBounds(293, 12, 96, 20);
+		textField.setBounds(348, 12, 96, 20);
 		
 		contentPane.add(textField);
-		lblNewLabel_1.setBounds(414, 15, 49, 14);
+		lblNewLabel_1.setBounds(455, 15, 49, 14);
 		
 		contentPane.add(lblNewLabel_1);
 		textField_1.setText("     ");
 		textField_1.setColumns(10);
-		textField_1.setBounds(444, 12, 67, 20);
+		textField_1.setBounds(510, 12, 67, 20);
 		
 		contentPane.add(textField_1);
-		scrollPane.setBounds(36, 79, 508, 133);
+		scrollPane.setBounds(36, 79, 541, 136);
 		
 		contentPane.add(scrollPane);
 		table.setModel(new DefaultTableModel(
@@ -178,6 +189,9 @@ public class Server extends JFrame {
 
 		table.setModel(tableModel);
 		scrollPane.setViewportView(table);
+		btnNewButton_1_1.setBounds(36, 238, 89, 23);
+		
+		contentPane.add(btnNewButton_1_1);
 	}
 	/**
 	 * Starts the already initialized frame, making it
