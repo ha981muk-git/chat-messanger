@@ -26,6 +26,7 @@ import java.awt.event.ActionEvent;
 import javax.swing.JMenuBar;
 import javax.swing.JMenu;
 import javax.swing.JCheckBox;
+import javax.swing.JMenuItem;
 
 public class Server extends JFrame {
 
@@ -63,13 +64,25 @@ public class Server extends JFrame {
 	 */
 	public Server() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 619, 300);
+		setBounds(100, 100, 619, 399);
 
 		JMenuBar menuBar = new JMenuBar();
 		setJMenuBar(menuBar);
 
 		JMenu mnNewMenu = new JMenu("File");
 		menuBar.add(mnNewMenu);
+		
+		JMenuItem mntmNewMenuItem = new JMenuItem("Exit");
+		mnNewMenu.add(mntmNewMenuItem);
+		
+		JMenu mnNewMenu_1 = new JMenu("Help");
+		menuBar.add(mnNewMenu_1);
+		
+		JMenuItem mntmNewMenuItem_1 = new JMenuItem("About");
+		mnNewMenu_1.add(mntmNewMenuItem_1);
+		
+		JMenuBar menuBar_1 = new JMenuBar();
+		menuBar.add(menuBar_1);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
