@@ -104,4 +104,14 @@ public class Parser {
         }
         return merge;
     }
+
+    /**
+     * detect opcode
+     *
+     * @param data byte[] of opcode
+     * @return integer
+     */
+    public static int detectType(byte[] data) {
+        return Parser.convertBytesToInt(data, START_OPCODE, Parser.OPCODE_LENGTH);
+    }
 }
