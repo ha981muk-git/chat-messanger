@@ -1,5 +1,7 @@
 package edu.fra.uas.net.utill;
 
+import edu.fra.uas.net.model.User;
+
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
@@ -15,6 +17,21 @@ public class Parser {
      */
     private static final int START_OPCODE = 0;
     private static final int OPCODE_LENGTH = 4;
+    /**
+     * Byte 5 to Byte 20 present username
+     */
+    private static final int START_USERNAME = 4;
+    private static final int USERNAME_LENGTH = 16;
+    /**
+     * Byte 21 to Byte 36 present host
+     */
+    private static final int START_HOST = 20;
+    private static final int HOST_LENGTH = 16;
+    /**
+     * Byte 37 to Byte 44 present port
+     */
+    private static final int START_PORT = 36;
+    private static final int PORT_LENGTH = 8;
 
     private Parser() {
     }
@@ -113,5 +130,18 @@ public class Parser {
      */
     public static int detectType(byte[] data) {
         return Parser.convertBytesToInt(data, START_OPCODE, Parser.OPCODE_LENGTH);
+    }
+
+    /**
+     * convert byte[] to User
+     *
+     * @param data byte[] of register a user
+     * @return User
+     */
+    public static User convertBytesToUser(byte[] data) {
+        String username = Parser.convertBytesToString(data, OPCODE_LENGTH, USERNAME_LENGTH);
+        String hostname = Parser.convertBytesToString(data, START_HOST, HOST_LENGTH);
+        int port = Parser.convertBytesToInt(data, START_PORT, PORT_LENGTH);
+        return new User(username, hostname, port);
     }
 }
