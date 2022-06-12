@@ -65,6 +65,7 @@ public class Server extends JFrame {
 	private final JScrollPane scrollPane = new JScrollPane();
 	private final JTable tableGroups = new JTable();
 	private final JScrollPane scrollPane_1 = new JScrollPane();
+	private final JButton btnDeleteGroup = new JButton("Delete");
 
 	/**
 	 * Launch the application.
@@ -254,6 +255,9 @@ public class Server extends JFrame {
 			tableModelGroup.setValueAt(count, i, 2);
 		}
 		tableGroups.setModel(tableModelGroup);
+		btnDeleteGroup.setBounds(30, 164, 89, 23);
+		
+		panelGroups.add(btnDeleteGroup);
 		
 	}
 	/**
