@@ -14,6 +14,7 @@ import java.util.Arrays;
  * @author kalnaasan
  */
 public class Parser {
+    
     /**
      * first 4 byte presents Opcode
      */
@@ -231,6 +232,19 @@ public class Parser {
         data = mergeArrays(data, receiverArr);
         // merge content with data
         data = mergeArrays(data, message.getContent().getData());
+        return data;
+    }
+
+    /**
+     * create byte[] from opcode and username
+     *
+     * @param opcode   type of array
+     * @param username name of client
+     * @return byte[]
+     */
+    public static byte[] createByteArray(int opcode, String username) {
+        byte[] data = convertToBytes(opcode, OPCODE_LENGTH);
+        data = mergeArrays(data, convertToBytes(username, USERNAME_LENGTH));
         return data;
     }
 }
