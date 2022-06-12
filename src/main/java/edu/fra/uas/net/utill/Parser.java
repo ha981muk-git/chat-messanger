@@ -52,6 +52,18 @@ public class Parser {
      * opcode to register a client
      */
     public static final int REGISTER = 0x01;
+    /**
+     * opcode to deregister a client
+     */
+    public static final int DEREGISTER = 0X02;
+    /**
+     * opcode presents message
+     */
+    public static final int MESSAGE = 0x03;
+    /**
+     * opcode to return a List of users
+     */
+    public static final int CLIENTS = 0x04;
 
     private Parser() {
     }
@@ -195,10 +207,30 @@ public class Parser {
      * @return Message
      */
     public static Message convertBytesToMessage(byte[] data) {
-        String sender = convertBytesToString(data, START_USERNAME, USERNAME_LENGTH);
-        String receiver = convertBytesToString(data, START_RECEIVER, RECEIVER_LENGTH);
-        String type = convertBytesToString(data, START_TYPE, TYPE_LENGTH);
-        Data content = new Data(Arrays.copyOfRange(data, START_MESSAGE, data.length));
+        String sender = convertBytesToString(data, START_USERNAME, START_USERNAME + USERNAME_LENGTH);
+        String receiver = convertBytesToString(data, START_RECEIVER, START_RECEIVER + RECEIVER_LENGTH);
+        String type = convertBytesToString(data, START_TYPE, START_TYPE + TYPE_LENGTH);
+        Data content = new Data(Arrays.copyOfRange(data, START_MESSAGE, START_MESSAGE + data.length));
         return new Message(sender, receiver, type, content);
+    }
+
+    /**
+     * convert a Message to array of bytes
+     *
+     * @param message message
+     * @return byte[]
+     */
+    public static byte[] createByteArray(Message message) {
+        // convert opcode to 4-byte[]
+        byte[] data = convertToBytes(MESSAGE, OPCODE_LENGTH);
+        // convert sender to 16-byte[]
+        byte[] senderArr = convertToBytes(message.getSender(), USERNAME_LENGTH);
+        data = mergeArrays(data, senderArr);
+        // convert receiver to 16-byte[]
+        byte[] receiverArr = convertToBytes(message.getReceiver(), RECEIVER_LENGTH);
+        data = mergeArrays(data, receiverArr);
+        // merge content with data
+        data = mergeArrays(data, message.getContent().getData());
+        return data;
     }
 }
