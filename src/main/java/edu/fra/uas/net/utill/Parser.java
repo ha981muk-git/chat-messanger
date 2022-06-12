@@ -32,6 +32,10 @@ public class Parser {
      */
     private static final int START_PORT = 36;
     private static final int PORT_LENGTH = 8;
+    /**
+     * opcode to register a client
+     */
+    public static final int REGISTER = 0x01;
 
     private Parser() {
     }
@@ -139,9 +143,32 @@ public class Parser {
      * @return User
      */
     public static User convertBytesToUser(byte[] data) {
-        String username = Parser.convertBytesToString(data, OPCODE_LENGTH, USERNAME_LENGTH);
-        String hostname = Parser.convertBytesToString(data, START_HOST, HOST_LENGTH);
-        int port = Parser.convertBytesToInt(data, START_PORT, PORT_LENGTH);
+        String username = Parser.convertBytesToString(data, OPCODE_LENGTH, OPCODE_LENGTH + USERNAME_LENGTH);
+        String hostname = Parser.convertBytesToString(data, START_HOST, START_HOST + HOST_LENGTH);
+        int port = Parser.convertBytesToInt(data, START_PORT, START_PORT + PORT_LENGTH);
         return new User(username, hostname, port);
+    }
+
+    /**
+     * convert a User to array of bytes
+     *
+     * @param username name of client
+     * @param hostname host of client
+     * @param port     port of client
+     * @return byte[]
+     */
+    public static byte[] createByteArray(String username, String hostname, int port) {
+        // convert opcode to 4-byte[]
+        byte[] data = convertToBytes(REGISTER, OPCODE_LENGTH);
+        // convert username to 16-byte[]
+        byte[] usernameArr = convertToBytes(username, USERNAME_LENGTH);
+        data = mergeArrays(data, usernameArr);
+        // convert hostname to 16-byte[]
+        byte[] hostnameArr = convertToBytes(hostname, HOST_LENGTH);
+        data = mergeArrays(data, hostnameArr);
+        // convert port to 8-byte[]
+        byte[] portArr = convertToBytes(port, PORT_LENGTH);
+        data = mergeArrays(data, portArr);
+        return data;
     }
 }
