@@ -277,6 +277,9 @@ public class Server extends JFrame {
 		
 		panelGroups.add(btnDeleteGroup);
 		
+		tfIPAdress.setText("127.0.0.1");
+		tfPort.setText("8080");
+		
 	}
 	/**
 	 * Starts the already initialized frame, making it
