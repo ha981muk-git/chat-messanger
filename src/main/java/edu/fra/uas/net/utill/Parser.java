@@ -1,5 +1,7 @@
 package edu.fra.uas.net.utill;
 
+import edu.fra.uas.net.message.Data;
+import edu.fra.uas.net.model.Message;
 import edu.fra.uas.net.model.User;
 
 import java.math.BigInteger;
@@ -32,6 +34,20 @@ public class Parser {
      */
     private static final int START_PORT = 36;
     private static final int PORT_LENGTH = 8;
+    /**
+     * Byte 21 to Byte 36 present receiver
+     */
+    private static final int START_RECEIVER = 20;
+    private static final int RECEIVER_LENGTH = 16;
+    /**
+     * Byte 37 to Byte 44 present type
+     */
+    private static final int START_TYPE = 36;
+    private static final int TYPE_LENGTH = 8;
+    /**
+     * Byte 45 to end of byte[] present content
+     */
+    private static final int START_MESSAGE = 44;
     /**
      * opcode to register a client
      */
@@ -170,5 +186,19 @@ public class Parser {
         byte[] portArr = convertToBytes(port, PORT_LENGTH);
         data = mergeArrays(data, portArr);
         return data;
+    }
+
+    /**
+     * convert byte[] to Message
+     *
+     * @param data array of byte
+     * @return Message
+     */
+    public static Message convertBytesToMessage(byte[] data) {
+        String sender = convertBytesToString(data, START_USERNAME, USERNAME_LENGTH);
+        String receiver = convertBytesToString(data, START_RECEIVER, RECEIVER_LENGTH);
+        String type = convertBytesToString(data, START_TYPE, TYPE_LENGTH);
+        Data content = new Data(Arrays.copyOfRange(data, START_MESSAGE, data.length));
+        return new Message(sender, receiver, type, content);
     }
 }
