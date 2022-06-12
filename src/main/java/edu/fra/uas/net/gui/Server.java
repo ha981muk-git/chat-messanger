@@ -84,6 +84,7 @@ public class Server extends JFrame {
 		groups.add(new Group("Group3"));
 		groups.add(new Group("Group4"));
 		groups.add(new Group("Group5"));
+		groups.add(new Group("Group5"));
 
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
@@ -127,6 +128,23 @@ public class Server extends JFrame {
 		mnNewMenu.add(mntmNewMenuItem_1);
 		
 		menuBar.add(mnNewMenu_1);
+		mntmNewMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				String infoMessage = "This Chat Server is developed by Mohammed Dawoud, Kaddour Alnaasan and Harsh Mukhiya";
+		        JOptionPane.showMessageDialog(null, infoMessage, "About Chat_Server ", JOptionPane.INFORMATION_MESSAGE);
+			}
+		});
+		mntmNewMenuItem.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				
+				mntmNewMenuItem_1.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						
+					}
+				});
+			}
+		});
 		
 		mnNewMenu_1.add(mntmNewMenuItem);
 		contentPane = new JPanel();
@@ -139,11 +157,11 @@ public class Server extends JFrame {
 		btnStop.setBounds(134, 11, 89, 23);
 		
 		contentPane.add(btnStop);
-		lblIPAdresse.setBounds(233, 13, 92, 19);
+		lblIPAdresse.setBounds(244, 13, 92, 19);
 		
 		contentPane.add(lblIPAdresse);
 		tfIPAdress.setColumns(10);
-		tfIPAdress.setBounds(317, 12, 96, 20);
+		tfIPAdress.setBounds(336, 12, 96, 20);
 		
 		contentPane.add(tfIPAdress);
 		lblPort.setBounds(442, 15, 40, 14);
