@@ -17,6 +17,7 @@ public class User implements Serializable {
 	private String username;
 	private String host;
 	private int port;
+	private boolean toDelete = false;
 
 	public User(String username, String host, int port) {
 		super();
@@ -48,5 +49,14 @@ public class User implements Serializable {
 	public void setPort(int port) {
 		this.port = port;
 	}
+
+	public boolean isToDelete() {
+		return toDelete;
+	}
+
+	public void setToDelete(boolean toDelete) {
+		this.toDelete = toDelete;
+	}
+	
 
 }
