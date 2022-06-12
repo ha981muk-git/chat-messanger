@@ -30,8 +30,7 @@ public class Data {
      */
     protected int length = 0;
 
-
-    /**
+	/**
      * Constructs a new <code>Data</code>. This protected
      * constructor is called by concrete subclasses, which should
      * ensure that the data array specifies a data.
@@ -42,7 +41,7 @@ public class Data {
      *
      * @see #setData
      */
-    protected Data(byte[] data) {
+    public Data(byte[] data) {
         this.dataBytes = data;
         if (data != null) {
             this.length = data.length;
