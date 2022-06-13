@@ -55,6 +55,9 @@ public class ChatServer extends AbstractServer {
                     users.add(newClient);
                     log.info("From: " + srcAddress + ":" + srcPort + " // " + newClient.getUsername());
                     break;
+                case Parser.DEREGISTER:
+                    User deletedUser = Parser.convertBytesToUser(receivedData);
+                    users.remove(deletedUser);
                 default:
                     break;
             }
