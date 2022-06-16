@@ -190,7 +190,7 @@ public class Client {
 		panelMessage.add(panelClientsName);
 		panelClientsName.setLayout(null);
 		lblClientsName.setFont(new Font("Lucida Grande", Font.PLAIN, 15));
-		lblClientsName.setBounds(0, 0, 470, 67);
+		lblClientsName.setBounds(6, 6, 442, 67);
 		panelClientsName.add(lblClientsName);
 		panelMessageAddFileAndSend.setBounds(0, 416, 470, 95);
 		
