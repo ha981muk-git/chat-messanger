@@ -134,7 +134,7 @@ public class Client {
 		
 		panelConfig.add(panelConfigServerUser);
 		panelConfigServerUser.setLayout(null);
-		btnSave.setBounds(170, 228, 117, 29);
+		btnSave.setBounds(175, 235, 117, 29);
 		
 		panelConfigServerUser.add(btnSave);
 		panelConfigServer.setBackground(Color.LIGHT_GRAY);
