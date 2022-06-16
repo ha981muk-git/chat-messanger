@@ -130,7 +130,7 @@ public class Client {
 		panelConfig.setLayout(null);
 		panelConfigServerUser.setBackground(Color.LIGHT_GRAY);
 		panelConfigServerUser.setBorder(null);
-		panelConfigServerUser.setBounds(201, 21, 448, 278);
+		panelConfigServerUser.setBounds(201, 21, 448, 270);
 		
 		panelConfig.add(panelConfigServerUser);
 		panelConfigServerUser.setLayout(null);
