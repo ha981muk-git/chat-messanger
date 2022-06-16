@@ -240,6 +240,11 @@ public class Server extends JFrame {
 		tableClients.setBackground(Color.WHITE);
 
 		tableClients.setModel(tableModel);
+		btnDeleteClient.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				btnDeleteActionPerformed(tableClients);
+			}
+		});
 		btnDeleteClient.setBounds(30, 164, 89, 23);
 		panelClients.add(btnDeleteClient);
 
@@ -279,6 +284,11 @@ public class Server extends JFrame {
 			tableModelGroup.setValueAt(count, i, 2);
 		}
 		tableGroups.setModel(tableModelGroup);
+		btnDeleteGroup.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				btnDeleteActionPerformed(tableGroups);
+			}
+		});
 		btnDeleteGroup.setBounds(30, 164, 89, 23);
 
 		panelGroups.add(btnDeleteGroup);
@@ -295,5 +305,19 @@ public class Server extends JFrame {
 
 	public void start() {
 		setVisible(true);
+	}
+	
+	private void btnDeleteActionPerformed(JTable jTable) {
+		DefaultTableModel tblModel =(DefaultTableModel) jTable.getModel();
+		int countRow = jTable.getRowCount();
+		for(int i = 0; i < countRow; i++) {
+			boolean check = (boolean) jTable.getValueAt(i, 0);
+			if(check) {
+				tblModel.removeRow(i);
+				users.remove(i);
+				i--;
+				countRow--;
+			}
+		}
 	}
 }
