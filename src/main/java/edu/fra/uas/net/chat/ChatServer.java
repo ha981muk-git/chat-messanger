@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import edu.fra.uas.net.AbstractServer;
+import edu.fra.uas.net.model.Message;
 import edu.fra.uas.net.model.User;
 import edu.fra.uas.net.utill.Log;
 import edu.fra.uas.net.utill.Parser;
@@ -51,18 +52,70 @@ public class ChatServer extends AbstractServer {
             int opcode = Parser.detectType(receivedData);
             switch (opcode) {
                 case Parser.REGISTER:
-                    User newClient = Parser.convertBytesToUser(receivedData);
-                    users.add(newClient);
-                    log.info("From: " + srcAddress + ":" + srcPort + " // " + newClient.getUsername());
+                    this.registerClient(receivedData, srcAddress, srcPort);
                     break;
                 case Parser.DEREGISTER:
+                    this.deregisterClient(receivedData, srcAddress, srcPort);
                     User deletedUser = Parser.convertBytesToUser(receivedData);
                     users.remove(deletedUser);
+                    break;
                 default:
                     break;
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * to register a client
+     *
+     * @param receivedData byte[]
+     * @param srcAddress   ip address of sender
+     * @param srcPort      port of sender
+     * @throws IOException Signals that an I/O exception to some sort has occurred.
+     *                     This class is the general class of exceptions produced by
+     *                     failed or interrupted I/O operations.
+     */
+    private void registerClient(byte[] receivedData, String srcAddress, int srcPort) throws IOException {
+        User client = Parser.convertBytesToUser(receivedData);
+        users.add(client);
+        log.info("REGISTER: " + srcAddress + ":" + srcPort + " // " + client.getUsername());
+        String sender = "server";
+        String receiver = client.getUsername();
+        String type = "REGISTERED";
+        String msg = "You are connected to server!";
+        Message message = new Message(sender, receiver, type, msg.getBytes());
+        this.sendResponse(Parser.createByteArray(message), client.getHost(), client.getPort());
+    }
+
+    /**
+     * to deregister a client
+     *
+     * @param receivedData byte[]
+     * @param srcAddress   ip address of sender
+     * @param srcPort      port of sender
+     */
+    private void deregisterClient(byte[] receivedData, String srcAddress, int srcPort) {
+        String sender = Parser.getSenderFromBytes(receivedData);
+        User user = this.getUser(sender);
+        log.info("REGISTER: " + srcAddress + ":" + srcPort + " // " + sender);
+        users.remove(user);
+
+    }
+
+    /**
+     * to get client by his username
+     *
+     * @param sender a source-client
+     * @return User {@link User}
+     */
+    private User getUser(String sender) {
+        for (User user : users) {
+            if (sender.equals(user.getUsername())) {
+                return user;
+            }
+        }
+        return null;
     }
 }
