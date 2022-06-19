@@ -1,9 +1,4 @@
-/**
- * 
- */
 package edu.fra.uas.net.model;
-
-import java.io.Serializable;
 
 /**
  * The UserClass presents the client
@@ -11,14 +6,19 @@ import java.io.Serializable;
  * @author kalnaasan
  *
  */
-public class User implements Serializable {
+public class User {
 
-	private static final long serialVersionUID = 2939221647535002673L;
 	private String username;
 	private String host;
 	private int port;
 	private boolean toDelete = false;
 
+	/**
+	 * default constructor
+	 * @param username username of client
+	 * @param host bind address
+	 * @param port bind port
+	 */
 	public User(String username, String host, int port) {
 		super();
 		this.username = username;
