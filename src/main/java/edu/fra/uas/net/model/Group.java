@@ -10,6 +10,8 @@ import java.util.List;
 public class Group {
 	private String name;
 	private List<User> users = new ArrayList<>();
+	private boolean toDelete = false;
+
 
 	public Group(String name) {
 		super();
@@ -31,5 +33,14 @@ public class Group {
 	public void setUsers(List<User> users) {
 		this.users = users;
 	}
+
+	public boolean isToDelete() {
+		return toDelete;
+	}
+
+	public void setToDelete(boolean toDelete) {
+		this.toDelete = toDelete;
+	}
+	
 
 }
