@@ -1,59 +1,63 @@
 package edu.fra.uas.net.model;
 
-import java.io.Serializable;
-
-import edu.fra.uas.net.message.Data;
-
 /**
- * 
- * @author kalnaasan
+ * This class presents sent message
  *
+ * @author kalnaasan
  */
-public class Message implements Serializable {
+public class Message {
 
-	private static final long serialVersionUID = -2413682340604592350L;
-	private String sender;
-	private String receiver;
-	private String type;
-	private Data content;
+    private static final long serialVersionUID = -2413682340604592350L;
+    private String sender;
+    private String receiver;
+    private String type;
+    private byte[] content;
 
-	public Message(String sender, String receiver, String type, Data content) {
-		super();
-		this.sender = sender;
-		this.receiver = receiver;
-		this.type = type;
-		this.content = content;
-	}
+    /**
+     * default constructor
+     *
+     * @param sender   from client
+     * @param receiver to client
+     * @param type     type of message
+     * @param content  content of message
+     */
+    public Message(String sender, String receiver, String type, byte[] content) {
+        super();
+        this.sender = sender;
+        this.receiver = receiver;
+        this.type = type;
+        this.content = content;
+    }
 
-	public String getSender() {
-		return sender;
-	}
+    public String getSender() {
+        return sender;
+    }
 
-	public void setSender(String sender) {
-		this.sender = sender;
-	}
+    public void setSender(String sender) {
+        this.sender = sender;
+    }
 
-	public String getReceiver() {
-		return receiver;
-	}
+    public String getReceiver() {
+        return receiver;
+    }
 
-	public void setReceiver(String receiver) {
-		this.receiver = receiver;
-	}
+    public void setReceiver(String receiver) {
+        this.receiver = receiver;
+    }
 
-	public String getType() {
-		return type;
-	}
+    public String getType() {
+        return type;
+    }
 
-	public void setType(String type) {
-		this.type = type;
-	}
+    public void setType(String type) {
+        this.type = type;
+    }
 
-	public Data getContent() {
-		return content;
-	}
+    public byte[] getContent() {
+        return content;
+    }
 
-	public void setContent(Data content) {
-		this.content = content;
-	}
+    public void setContent(byte[] content) {
+        this.content = content;
+    }
 }
