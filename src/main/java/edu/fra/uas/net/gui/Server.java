@@ -299,33 +299,12 @@ public class Server extends JFrame {
 		}
 	}
 
-//	public void addUserToTable(User user, int i) {
-//		String username = user.getUsername();
-//		String host = user.getHost();
-//		int port = user.getPort();
-
-//		DefaultTableModel tableModel = (DefaultTableModel) this.tableClients.getModel();
-//		String colsClient[] = new String[]{ "check", "username", "host", "port" };
-//
-//		tableModel.setColumnIdentifiers(colsClient);
-//		this.tableClients.setModel(tableModel);
-//
-//		
-//		tableModel.addRow(new Object[0]);
-//		tableModel.setValueAt(false, i, 0);
-//		tableModel.setValueAt(username, i, 1);
-//		tableModel.setValueAt(host, i, 2);
-//		tableModel.setValueAt(port, i, 3);
-//		
-//	
-////		int row = this.tableClients.getRowCount();
-////		tableModel.addRow(new Object[0]);
-////		tableModel.setValueAt(false, i, 0);
-////		tableModel.setValueAt(username, i, 1);
-////		tableModel.setValueAt(host, i, 2);
-////		tableModel.setValueAt(port, i, 3);
-//
-//	}
+	/**
+	 * to add client to Clients-table
+	 * @param user A Client
+	 * 
+	 * @author M.Dawoud
+	 */
 	public void addRow(User user) {
 		DefaultTableModel tableModel = (DefaultTableModel) this.tableClients.getModel();
 		tableModel.addRow(new Object[] { user.isToDelete(), user.getUsername(), user.getHost(), user.getPort() });
