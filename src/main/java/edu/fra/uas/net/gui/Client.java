@@ -30,6 +30,7 @@ import java.util.List;
 import javax.swing.JScrollPane;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
+import javax.swing.UIManager;
 
 public class Client {
 	
@@ -55,18 +56,18 @@ public class Client {
 	private final JScrollPane scrollPane = new JScrollPane();
 	private final JPanel panelConfigServerUser = new JPanel();
 	private final JButton btnSave = new JButton("Save");
-	private final JLabel lblServerIp = new JLabel("IP");
-	private final JLabel lblServerPort = new JLabel("Port");
+	private final JLabel lblServerIp = new JLabel("IP Address :");
+	private final JLabel lblServerPort = new JLabel("Port           :");
 	private final JTextField textFieldServerIp = new JTextField();
 	private final JTextField textFieldServerPort = new JTextField();
 	private final Panel panelConfigServer = new Panel();
-	private final JLabel lblServer = new JLabel("Server");
+	private final JLabel lblServer = new JLabel("Server        :");
 	private final Panel panelConfigUser = new Panel();
-	private final JLabel lblUserIp = new JLabel("IP");
+	private final JLabel lblUserIp = new JLabel("IP Address  :");
 	private final JTextField textFieldUserIp = new JTextField();
-	private final JLabel lblUserPort = new JLabel("Port");
+	private final JLabel lblUserPort = new JLabel("Port            :");
 	private final JTextField textFieldUserPort = new JTextField();
-	private final JLabel lblUser = new JLabel("Username");
+	private final JLabel lblUser = new JLabel("Client         :");
 	private final JTextField textFieldCurrentMessage = new JTextField();
 	private final JButton btnMessageSend = new JButton("Send");
 	private final JButton btnFileAdd = new JButton("Add File");
@@ -128,9 +129,9 @@ public class Client {
 		
 		tabbedPane.addTab("Config", null, panelConfig, null);
 		panelConfig.setLayout(null);
-		panelConfigServerUser.setBackground(Color.LIGHT_GRAY);
+		panelConfigServerUser.setBackground(UIManager.getColor("Button.background"));
 		panelConfigServerUser.setBorder(null);
-		panelConfigServerUser.setBounds(201, 21, 448, 270);
+		panelConfigServerUser.setBounds(200, 128, 448, 270);
 		
 		panelConfig.add(panelConfigServerUser);
 		panelConfigServerUser.setLayout(null);
@@ -138,44 +139,44 @@ public class Client {
 		
 		panelConfigServerUser.add(btnSave);
 		panelConfigServer.setBackground(Color.LIGHT_GRAY);
-		panelConfigServer.setBounds(74, 21, 303, 83);
+		panelConfigServer.setBounds(61, 21, 316, 83);
 		
 		panelConfigServerUser.add(panelConfigServer);
 		panelConfigServer.setLayout(null);
-		lblServerIp.setBounds(23, 27, 63, 16);
+		lblServerIp.setBounds(6, 27, 90, 16);
 		panelConfigServer.add(lblServerIp);
 		textFieldServerIp.setBounds(108, 22, 139, 26);
 		panelConfigServer.add(textFieldServerIp);
 		textFieldServerIp.setColumns(10);
-		lblServerPort.setBounds(23, 52, 61, 16);
+		lblServerPort.setBounds(6, 52, 78, 16);
 		panelConfigServer.add(lblServerPort);
 		textFieldServerPort.setBounds(108, 47, 61, 26);
 		panelConfigServer.add(textFieldServerPort);
 		textFieldServerPort.setColumns(10);
-		lblServer.setBounds(23, -1, 61, 16);
+		lblServer.setBounds(6, -1, 90, 26);
 		
 		panelConfigServer.add(lblServer);
 		panelConfigUser.setLayout(null);
 		panelConfigUser.setBackground(Color.LIGHT_GRAY);
-		panelConfigUser.setBounds(74, 124, 303, 83);
+		panelConfigUser.setBounds(61, 124, 316, 83);
 		
 		panelConfigServerUser.add(panelConfigUser);
 		lblUserIp.setBackground(Color.LIGHT_GRAY);
-		lblUserIp.setBounds(23, 27, 63, 16);
+		lblUserIp.setBounds(6, 27, 90, 16);
 		
 		panelConfigUser.add(lblUserIp);
 		textFieldUserIp.setColumns(10);
 		textFieldUserIp.setBounds(108, 22, 139, 26);
 		
 		panelConfigUser.add(textFieldUserIp);
-		lblUserPort.setBounds(23, 52, 61, 16);
+		lblUserPort.setBounds(6, 52, 78, 16);
 		
 		panelConfigUser.add(lblUserPort);
 		textFieldUserPort.setColumns(10);
 		textFieldUserPort.setBounds(108, 47, 61, 26);
 		
 		panelConfigUser.add(textFieldUserPort);
-		lblUser.setBounds(23, -1, 74, 16);
+		lblUser.setBounds(6, -1, 91, 26);
 		
 		panelConfigUser.add(lblUser);
 		

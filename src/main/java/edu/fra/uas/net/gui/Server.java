@@ -93,7 +93,6 @@ public class Server extends JFrame {
 		groups.add(new Group("Group3"));
 		groups.add(new Group("Group4"));
 		groups.add(new Group("Group5"));
-		groups.add(new Group("Group5"));
 
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
@@ -180,36 +179,6 @@ public class Server extends JFrame {
 
 		contentPane.add(tfPort);
 
-		String colsClient[] = { "check", "username", "host", "port" };
-		DefaultTableModel tableModel = new DefaultTableModel(colsClient, 0) {
-			private static final long serialVersionUID = 1L;
-
-			public Class<?> getColumnClass(int column) {
-				switch (column) {
-				case 0:
-					return Boolean.class;
-				case 1:
-					return String.class;
-				case 2:
-					return String.class;
-				case 3:
-					return String.class;
-				default:
-					return String.class;
-				}
-			}
-		};
-		for (int i = 0; i < users.size(); i++) {
-			String username = users.get(i).getUsername();
-			String host = users.get(i).getHost();
-			int port = users.get(i).getPort();
-			tableModel.addRow(new Object[0]);
-			tableModel.setValueAt(false, i, 0);
-			tableModel.setValueAt(username, i, 1);
-			tableModel.setValueAt(host, i, 2);
-			tableModel.setValueAt(port, i, 3);
-
-		}
 		tabbedPane.setBounds(10, 47, 569, 226);
 
 		contentPane.add(tabbedPane);
@@ -220,11 +189,17 @@ public class Server extends JFrame {
 
 		panelClients.add(scrollPane);
 		scrollPane.setViewportView(tableClients);
-		tableClients.setModel(new DefaultTableModel(new Object[][] { { null, null, null, null }, },
-				new String[] { "Checked", "UserName", "Host", "Port" }) {
-			private static final long serialVersionUID = 1L;
-			Class[] columnTypes = new Class[] { Object.class, String.class, String.class, Integer.class };
-
+		tableClients.setModel(
+				new DefaultTableModel(
+			new Object[][] {
+			},
+			new String[] {
+				"Checked", "UserName", "Host", "Port"
+			}
+		) {
+			Class[] columnTypes = new Class[] {
+				Boolean.class, String.class, String.class, Integer.class
+			};
 			public Class getColumnClass(int columnIndex) {
 				return columnTypes[columnIndex];
 			}
@@ -239,7 +214,6 @@ public class Server extends JFrame {
 		tableClients.setBorder(UIManager.getBorder("CheckBox.border"));
 		tableClients.setBackground(Color.WHITE);
 
-		tableClients.setModel(tableModel);
 		btnDeleteClient.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				btnDeleteActionPerformed(tableClients);
@@ -254,8 +228,8 @@ public class Server extends JFrame {
 
 		panelGroups.add(scrollPane_1);
 		scrollPane_1.setViewportView(tableGroups);
-		tableGroups.setModel(new DefaultTableModel(new Object[][] {},
-				new String[] { "Check", "Name of Grupp", "Number of Client" }));
+		tableGroups.setModel(new DefaultTableModel(new Object[][] { { null, null, null }, },
+				new String[] { "Checked", "Name of Group", "Count of Clients" }));
 
 		String colsGroup[] = { "check", "name of Group", "count of Group" };
 		DefaultTableModel tableModelGroup = new DefaultTableModel(colsGroup, 0) {
@@ -296,6 +270,10 @@ public class Server extends JFrame {
 		tfIPAdress.setText("127.0.0.1");
 		tfPort.setText("8080");
 
+		for (int i = 0; i < users.size(); i++) {
+			this.addRow(users.get(i));
+		}
+
 	}
 
 	/**
@@ -306,13 +284,13 @@ public class Server extends JFrame {
 	public void start() {
 		setVisible(true);
 	}
-	
+
 	private void btnDeleteActionPerformed(JTable jTable) {
-		DefaultTableModel tblModel =(DefaultTableModel) jTable.getModel();
+		DefaultTableModel tblModel = (DefaultTableModel) jTable.getModel();
 		int countRow = jTable.getRowCount();
-		for(int i = 0; i < countRow; i++) {
+		for (int i = 0; i < countRow; i++) {
 			boolean check = (boolean) jTable.getValueAt(i, 0);
-			if(check) {
+			if (check) {
 				tblModel.removeRow(i);
 				users.remove(i);
 				i--;
@@ -320,4 +298,17 @@ public class Server extends JFrame {
 			}
 		}
 	}
+
+	/**
+	 * to add client to Clients-table
+	 * @param user A Client
+	 * 
+	 * @author M.Dawoud
+	 */
+	public void addRow(User user) {
+		DefaultTableModel tableModel = (DefaultTableModel) this.tableClients.getModel();
+		tableModel.addRow(new Object[] { user.isToDelete(), user.getUsername(), user.getHost(), user.getPort() });
+
+	}
+
 }

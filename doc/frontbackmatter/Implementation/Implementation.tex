@@ -26,15 +26,36 @@ In the server mask you can enter a server with its IP address and port (As defau
 and then click the Start server button to start the server. 
 When the server is started, two tables will display all connected clients and all created groups, respectively.
 If you click on the Client tab, a table with the following columns will be displayed (checked, username, host, port).
+\medskip
+
+\noindent
 The column with the check boxes are used to select the clients to be deleted. 
 After the clients are selected, you should click the "Delete" button under the table.
-\medspace{}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.7\textwidth]{gfx/GUI_Server_Clients.png}
+    \caption{GUI-Server-Clients}
+    \label{fig:gui-server-clients}
+\end{figure}
+
+\noindent
 The "Groups" table has less columns than the "Clients" table, namely (Check, Name of the group, count of clients )
 The "Check" column has the same principle of operation as in the "Clients " table,
- the groups can be selected to be deleted. 
-\medspace{}
- when a client is deleted, a message is sent to all other clients with the content (the client is deleted with server).
+the groups can be selected to be deleted. 
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.7\textwidth]{gfx/GUI_Server_Groups.png}
+    \caption{GUI-Server-Groups}
+    \label{fig:gui-server-groups}
+\end{figure}
+
+\noindent
+when a client is deleted, a message is sent to all other clients with the content (the client is deleted with server).
 This message (the Group is deleted with serve) is also sent for all clients when a group is deleted. 
-\medspace{}
+\medskip
+
+\noindent
 If you want to stop the server, it must click on the "Stop" button at the top of the mask.
 when you want to close the server application, click on File -->Exit.
