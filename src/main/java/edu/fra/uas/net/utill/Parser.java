@@ -1,6 +1,5 @@
 package edu.fra.uas.net.utill;
 
-import edu.fra.uas.net.message.Data;
 import edu.fra.uas.net.model.Message;
 import edu.fra.uas.net.model.User;
 
@@ -9,12 +8,27 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 /**
- * convert Byte[] to Object
+ * convert Byte[] to Object <br>
+ * <p>
+ * |4-byte|16-byte|16-byte |
+ * |opcode|sender |receiver|
+ * <p>
+ * |4-byte|16-bytes|16-bytes|16-bytes |2-bytes|
+ * |opcode|sender  |receiver|Hostname |port   |
+ * <p>
+ * |4-byte|16-byte|16-byte |
+ * |opcode |sender |receiver|
+ * <p>
+ * |4-byte|16-byte|16-byte |8-byte|any-length|
+ * |opcode|sender |receiver|type  |content   |
+ * <p>
+ * |4-byte|16-byte|16-byte |
+ * |opcode|sender |receiver|
  *
  * @author kalnaasan
  */
 public class Parser {
-    
+
     /**
      * first 4 byte presents Opcode
      */
@@ -23,32 +37,32 @@ public class Parser {
     /**
      * Byte 5 to Byte 20 present username
      */
-    private static final int START_USERNAME = 4;
-    private static final int USERNAME_LENGTH = 16;
-    /**
-     * Byte 21 to Byte 36 present host
-     */
-    private static final int START_HOST = 20;
-    private static final int HOST_LENGTH = 16;
-    /**
-     * Byte 37 to Byte 44 present port
-     */
-    private static final int START_PORT = 36;
-    private static final int PORT_LENGTH = 8;
+    private static final int START_SENDER = START_OPCODE + OPCODE_LENGTH;
+    private static final int SENDER_LENGTH = 16;
     /**
      * Byte 21 to Byte 36 present receiver
      */
-    private static final int START_RECEIVER = 20;
+    private static final int START_RECEIVER = START_SENDER + SENDER_LENGTH;
     private static final int RECEIVER_LENGTH = 16;
+    /**
+     * Byte 37 to Byte 52 present host
+     */
+    private static final int START_HOST = START_RECEIVER + RECEIVER_LENGTH;
+    private static final int HOST_LENGTH = 16;
+    /**
+     * Byte 53 to Byte 68 present port
+     */
+    private static final int START_PORT = START_HOST + HOST_LENGTH;
+    private static final int PORT_LENGTH = 4;
     /**
      * Byte 37 to Byte 44 present type
      */
-    private static final int START_TYPE = 36;
-    private static final int TYPE_LENGTH = 8;
+    private static final int START_TYPE = START_RECEIVER + RECEIVER_LENGTH;
+    private static final int TYPE_LENGTH = 16;
     /**
      * Byte 45 to end of byte[] present content
      */
-    private static final int START_MESSAGE = 44;
+    private static final int START_MESSAGE = START_TYPE + TYPE_LENGTH;
     /**
      * opcode to register a client
      */
@@ -64,7 +78,7 @@ public class Parser {
     /**
      * opcode to return a List of users
      */
-    public static final int CLIENTS = 0x04;
+    public static final int SEARCH = 0x04;
 
     private Parser() {
     }
@@ -92,7 +106,7 @@ public class Parser {
      * @return {@link String}
      */
     private static String convertBytesToString(byte[] data, int start, int end) {
-        return new String(Arrays.copyOfRange(data, start, end));
+        return Parser.deleteEmptyBytes(new String(Arrays.copyOfRange(data, start, end)));
     }
 
     /**
@@ -103,15 +117,9 @@ public class Parser {
      * @return byte[]
      */
     private static byte[] convertToBytes(int number, int length) {
-        byte[] data = new byte[length];
         byte[] integerArr = BigInteger.valueOf(number).toByteArray();
-        for (int i = 0; i < length; i++) {
-            if (i < integerArr.length) {
-                data[i] = integerArr[i];
-            } else {
-                data[i] = 0;
-            }
-        }
+        byte[] data = new byte[length - integerArr.length];
+        data = Parser.mergeArrays(data, integerArr);
         return data;
     }
 
@@ -123,15 +131,9 @@ public class Parser {
      * @return byte[]
      */
     private static byte[] convertToBytes(String text, int length) {
-        byte[] data = new byte[length];
         byte[] stringArr = text.getBytes();
-        for (int i = 0; i < length; i++) {
-            if (i < stringArr.length) {
-                data[i] = stringArr[i];
-            } else {
-                data[i] = 0;
-            }
-        }
+        byte[] data = new byte[length - stringArr.length];
+        data = Parser.mergeArrays(data, stringArr);
         return data;
     }
 
@@ -142,17 +144,35 @@ public class Parser {
      * @param arr2 second array of bytes
      * @return byte[]
      */
-    private static byte[] mergeArrays(byte[] arr1, byte[] arr2) {
+    public static byte[] mergeArrays(byte[] arr1, byte[] arr2) {
         byte[] merge = new byte[arr1.length + arr2.length];
         int counter = 0;
         for (int i = 0; i < arr1.length; i++) {
             merge[i] = arr1[i];
             counter++;
         }
-        for (int i = 0; i < arr2.length; i++) {
-            merge[counter++] = arr1[i];
+        for (byte b : arr2) {
+            merge[counter++] = b;
         }
         return merge;
+    }
+
+    /**
+     * to create basic byte[] from opcode, sender and receiver
+     *
+     * @param opcode   type of content
+     * @param sender   message is sent by Client
+     * @param receiver message should be received by Client
+     * @return byte[]
+     */
+    private static byte[] createBasesArray(int opcode, String sender, String receiver) {
+        // convert opcode to byte[]
+        byte[] data = Parser.convertToBytes(opcode, Parser.OPCODE_LENGTH);
+        // convert sender to byte[]
+        data = Parser.mergeArrays(data, Parser.convertToBytes(sender, SENDER_LENGTH));
+        // convert receiver to byte[]
+        data = Parser.mergeArrays(data, Parser.convertToBytes(receiver, RECEIVER_LENGTH));
+        return data;
     }
 
     /**
@@ -162,7 +182,7 @@ public class Parser {
      * @return integer
      */
     public static int detectType(byte[] data) {
-        return Parser.convertBytesToInt(data, START_OPCODE, Parser.OPCODE_LENGTH);
+        return Parser.convertBytesToInt(data, START_OPCODE, Parser.START_OPCODE + Parser.OPCODE_LENGTH);
     }
 
     /**
@@ -172,32 +192,27 @@ public class Parser {
      * @return User
      */
     public static User convertBytesToUser(byte[] data) {
-        String username = Parser.convertBytesToString(data, OPCODE_LENGTH, OPCODE_LENGTH + USERNAME_LENGTH);
+        String sender = Parser.convertBytesToString(data, START_SENDER, START_SENDER + SENDER_LENGTH);
         String hostname = Parser.convertBytesToString(data, START_HOST, START_HOST + HOST_LENGTH);
         int port = Parser.convertBytesToInt(data, START_PORT, START_PORT + PORT_LENGTH);
-        return new User(username, hostname, port);
+        return new User(sender, hostname, port);
     }
 
     /**
      * convert a User to array of bytes
      *
-     * @param username name of client
+     * @param sender   name of client
      * @param hostname host of client
      * @param port     port of client
      * @return byte[]
      */
-    public static byte[] createByteArray(String username, String hostname, int port) {
-        // convert opcode to 4-byte[]
-        byte[] data = convertToBytes(REGISTER, OPCODE_LENGTH);
-        // convert username to 16-byte[]
-        byte[] usernameArr = convertToBytes(username, USERNAME_LENGTH);
-        data = mergeArrays(data, usernameArr);
-        // convert hostname to 16-byte[]
-        byte[] hostnameArr = convertToBytes(hostname, HOST_LENGTH);
-        data = mergeArrays(data, hostnameArr);
-        // convert port to 8-byte[]
-        byte[] portArr = convertToBytes(port, PORT_LENGTH);
-        data = mergeArrays(data, portArr);
+    public static byte[] createByteArray(String sender, String hostname, int port) {
+        // Create bases byte[]
+        byte[] data = Parser.createBasesArray(Parser.REGISTER, sender, "server");
+        // convert hostname to byte[]
+        data = Parser.mergeArrays(data, Parser.convertToBytes(hostname, Parser.HOST_LENGTH));
+        // convert port to byte[]
+        data = Parser.mergeArrays(data, Parser.convertToBytes(port, Parser.PORT_LENGTH));
         return data;
     }
 
@@ -208,10 +223,10 @@ public class Parser {
      * @return Message
      */
     public static Message convertBytesToMessage(byte[] data) {
-        String sender = convertBytesToString(data, START_USERNAME, START_USERNAME + USERNAME_LENGTH);
+        String sender = convertBytesToString(data, START_SENDER, START_SENDER + SENDER_LENGTH);
         String receiver = convertBytesToString(data, START_RECEIVER, START_RECEIVER + RECEIVER_LENGTH);
         String type = convertBytesToString(data, START_TYPE, START_TYPE + TYPE_LENGTH);
-        Data content = new Data(Arrays.copyOfRange(data, START_MESSAGE, START_MESSAGE + data.length));
+        byte[] content = Arrays.copyOfRange(data, Parser.START_MESSAGE, data.length);
         return new Message(sender, receiver, type, content);
     }
 
@@ -222,29 +237,36 @@ public class Parser {
      * @return byte[]
      */
     public static byte[] createByteArray(Message message) {
-        // convert opcode to 4-byte[]
-        byte[] data = convertToBytes(MESSAGE, OPCODE_LENGTH);
-        // convert sender to 16-byte[]
-        byte[] senderArr = convertToBytes(message.getSender(), USERNAME_LENGTH);
-        data = mergeArrays(data, senderArr);
-        // convert receiver to 16-byte[]
-        byte[] receiverArr = convertToBytes(message.getReceiver(), RECEIVER_LENGTH);
-        data = mergeArrays(data, receiverArr);
-        // merge content with data
-        data = mergeArrays(data, message.getContent().getData());
+        byte[] data = Parser.createBasesArray(Parser.MESSAGE, message.getSender(), message.getReceiver());
+        // convert type to bytes and merge it into byte[]
+        data = Parser.mergeArrays(data, Parser.convertToBytes(message.getType(), Parser.TYPE_LENGTH));
+        // merge content into byte[]
+        data = mergeArrays(data, message.getContent());
         return data;
     }
 
     /**
      * create byte[] from opcode and username
      *
-     * @param opcode   type of array
-     * @param username name of client
+     * @param opcode type of array
+     * @param sender name of client
      * @return byte[]
      */
-    public static byte[] createByteArray(int opcode, String username) {
-        byte[] data = convertToBytes(opcode, OPCODE_LENGTH);
-        data = mergeArrays(data, convertToBytes(username, USERNAME_LENGTH));
-        return data;
+    public static byte[] createByteArray(int opcode, String sender) {
+        return Parser.createBasesArray(opcode, sender, "server");
+    }
+
+    public static String getSenderFromBytes(byte[] data) {
+        return Parser.convertBytesToString(data, OPCODE_LENGTH, OPCODE_LENGTH + SENDER_LENGTH);
+    }
+
+    private static String deleteEmptyBytes(String text) {
+        int tmp = 0;
+        byte[] data = text.getBytes();
+        for (byte b : data) {
+            if (b == 0) tmp++;
+        }
+
+        return new String(Arrays.copyOfRange(data, tmp, data.length));
     }
 }
