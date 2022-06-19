@@ -228,36 +228,21 @@ public class Server extends JFrame {
 
 		panelGroups.add(scrollPane_1);
 		scrollPane_1.setViewportView(tableGroups);
-		tableGroups.setModel(new DefaultTableModel(new Object[][] { { null, null, null }, },
-				new String[] { "Checked", "Name of Group", "Count of Clients" }));
-
-		String colsGroup[] = { "check", "name of Group", "count of Group" };
-		DefaultTableModel tableModelGroup = new DefaultTableModel(colsGroup, 0) {
-			private static final long serialVersionUID = 1L;
-
-			public Class<?> getColumnClass(int column) {
-				switch (column) {
-				case 0:
-					return Boolean.class;
-				case 1:
-					return String.class;
-				case 2:
-					return Integer.class;
-				default:
-					return String.class;
-				}
+		tableGroups.setModel(new DefaultTableModel(
+			new Object[][] {
+			},
+			new String[] {
+				"Checked", "Name of Group", "Count of Clients"
 			}
-		};
-		for (int i = 0; i < groups.size(); i++) {
-
-			String name = groups.get(i).getName();
-			int count = groups.get(i).getUsers().size();
-			tableModelGroup.addRow(new Object[0]);
-			tableModelGroup.setValueAt(false, i, 0);
-			tableModelGroup.setValueAt(name, i, 1);
-			tableModelGroup.setValueAt(count, i, 2);
-		}
-		tableGroups.setModel(tableModelGroup);
+		) {
+			Class[] columnTypes = new Class[] {
+				Boolean.class, String.class, Integer.class
+			};
+			public Class getColumnClass(int columnIndex) {
+				return columnTypes[columnIndex];
+			}
+		});
+	
 		btnDeleteGroup.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				btnDeleteActionPerformed(tableGroups);
@@ -272,6 +257,9 @@ public class Server extends JFrame {
 
 		for (int i = 0; i < users.size(); i++) {
 			this.addRow(users.get(i));
+		}
+		for(Group group: groups) {
+			this.addRowToGroup(group);
 		}
 
 	}
@@ -308,6 +296,18 @@ public class Server extends JFrame {
 	public void addRow(User user) {
 		DefaultTableModel tableModel = (DefaultTableModel) this.tableClients.getModel();
 		tableModel.addRow(new Object[] { user.isToDelete(), user.getUsername(), user.getHost(), user.getPort() });
+
+	}
+	/**
+	 * to add Group to Groups-table
+	 * @param Group A Group of Clients
+	 * 
+	 * @author M.Dawoud
+	 */
+	
+	public void addRowToGroup(Group group) {
+		DefaultTableModel tableModel = (DefaultTableModel) this.tableGroups.getModel();
+		tableModel.addRow(new Object[] { group.isToDelete(), group.getName(), group.getUsers().size() });
 
 	}
 
