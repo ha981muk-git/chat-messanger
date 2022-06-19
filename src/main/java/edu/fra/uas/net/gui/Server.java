@@ -93,7 +93,6 @@ public class Server extends JFrame {
 		groups.add(new Group("Group3"));
 		groups.add(new Group("Group4"));
 		groups.add(new Group("Group5"));
-		groups.add(new Group("Group5"));
 
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
@@ -254,8 +253,14 @@ public class Server extends JFrame {
 
 		panelGroups.add(scrollPane_1);
 		scrollPane_1.setViewportView(tableGroups);
-		tableGroups.setModel(new DefaultTableModel(new Object[][] {},
-				new String[] { "Check", "Name of Grupp", "Number of Client" }));
+		tableGroups.setModel(new DefaultTableModel(
+			new Object[][] {
+				{null, null, null},
+			},
+			new String[] {
+				"Checked", "Name of Group", "Count of Clients"
+			}
+		));
 
 		String colsGroup[] = { "check", "name of Group", "count of Group" };
 		DefaultTableModel tableModelGroup = new DefaultTableModel(colsGroup, 0) {
