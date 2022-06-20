@@ -56,8 +56,6 @@ public class ChatServer extends AbstractServer {
                     break;
                 case Parser.DEREGISTER:
                     this.deregisterClient(receivedData, srcAddress, srcPort);
-                    User deletedUser = Parser.convertBytesToUser(receivedData);
-                    users.remove(deletedUser);
                     break;
                 default:
                     break;
@@ -96,12 +94,15 @@ public class ChatServer extends AbstractServer {
      * @param srcAddress   ip address of sender
      * @param srcPort      port of sender
      */
-    private void deregisterClient(byte[] receivedData, String srcAddress, int srcPort) {
-        String sender = Parser.getSenderFromBytes(receivedData);
-        User user = this.getUser(sender);
-        log.info("REGISTER: " + srcAddress + ":" + srcPort + " // " + sender);
-        users.remove(user);
-
+    private void deregisterClient(byte[] receivedData, String srcAddress, int srcPort) throws IOException {
+        String clientUsername = Parser.getSenderFromBytes(receivedData);
+        log.info("REGISTER: " + srcAddress + ":" + srcPort + " // " + clientUsername);
+        users.remove(this.getUser(clientUsername));
+        String sender = "server";
+        String type = "DEREGISTERED";
+        String msg = "You are disconnected to server!";
+        Message message = new Message(sender, clientUsername, type, msg.getBytes());
+        this.sendResponse(Parser.createByteArray(message), srcAddress, srcPort);
     }
 
     /**

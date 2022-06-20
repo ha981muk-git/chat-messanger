@@ -67,4 +67,14 @@ public class ChatClient extends Client {
         return new byte[0];
     }
 
+    /**
+     * to deregister a client
+     *
+     * @return byte[]
+     */
+    public Message deregister() throws IOException {
+        this.sendRequest(Parser.createByteArray(Parser.DEREGISTER, user.getUsername()));
+        return Parser.convertBytesToMessage(this.received());
+    }
+
 }
