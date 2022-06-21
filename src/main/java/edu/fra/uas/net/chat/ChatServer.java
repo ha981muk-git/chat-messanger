@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import edu.fra.uas.net.AbstractServer;
+import edu.fra.uas.net.gui.Server;
 import edu.fra.uas.net.model.Message;
 import edu.fra.uas.net.model.User;
 import edu.fra.uas.net.utill.Log;
@@ -78,6 +79,7 @@ public class ChatServer extends AbstractServer {
     private void registerClient(byte[] receivedData, String srcAddress, int srcPort) throws IOException {
         User client = Parser.convertBytesToUser(receivedData);
         users.add(client);
+        Server.addClientToTable(client);
         log.info("REGISTER: " + srcAddress + ":" + srcPort + " // " + client.getUsername());
         String sender = "server";
         String receiver = client.getUsername();
@@ -93,11 +95,15 @@ public class ChatServer extends AbstractServer {
      * @param receivedData byte[]
      * @param srcAddress   ip address of sender
      * @param srcPort      port of sender
+     * @throws IOException Signals that an I/O exception to some sort has occurred.
+     *                     This class is the general class of exceptions produced by
+     *                     failed or interrupted I/O operations.
      */
     private void deregisterClient(byte[] receivedData, String srcAddress, int srcPort) throws IOException {
         String clientUsername = Parser.getSenderFromBytes(receivedData);
         log.info("REGISTER: " + srcAddress + ":" + srcPort + " // " + clientUsername);
         users.remove(this.getUser(clientUsername));
+        Server.deleteUserFromTable(clientUsername);
         String sender = "server";
         String type = "DEREGISTERED";
         String msg = "You are disconnected to server!";
