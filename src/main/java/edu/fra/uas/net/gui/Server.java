@@ -20,11 +20,13 @@ import javax.swing.ListSelectionModel;
 import javax.swing.JScrollPane;
 import javax.swing.table.DefaultTableModel;
 
+import edu.fra.uas.net.chat.ChatServer;
 import edu.fra.uas.net.model.Group;
 import edu.fra.uas.net.model.User;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.awt.event.ActionListener;
@@ -42,6 +44,7 @@ import javax.swing.JTabbedPane;
 public class Server extends JFrame {
 
 	private static final long serialVersionUID = 1L;
+    private static ChatServer chatServer;
 	private static List<User> users = new ArrayList<>();
 	private static List<Group> groups = new ArrayList<>();
 
@@ -157,9 +160,35 @@ public class Server extends JFrame {
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
+		btnStartServer.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+                    Server.chatServer = new ChatServer("127.0.0.1", 8080);
+                    String infoMessage = "The Server is started!";
+                    JOptionPane.showMessageDialog(null, infoMessage, "Server Info ", JOptionPane.INFORMATION_MESSAGE);
+                    btnStartServer.setEnabled(false);
+                    btnStop.setEnabled(true);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+			}
+		});
 		btnStartServer.setBounds(10, 11, 114, 23);
 
 		contentPane.add(btnStartServer);
+        btnStop.setEnabled(false);
+        btnStop.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				int dialogButton = JOptionPane.YES_NO_OPTION;
+                int dialogResult = JOptionPane.showConfirmDialog(null, "Do you want to stop the Server ?",
+                        "Server Info", dialogButton);
+                if (dialogResult == 0) {
+                    Server.chatServer.stopAndClose();
+                    btnStartServer.setEnabled(true);
+                    btnStop.setEnabled(false);
+                }
+			}
+		});
 		btnStop.setBounds(134, 11, 89, 23);
 
 		contentPane.add(btnStop);
