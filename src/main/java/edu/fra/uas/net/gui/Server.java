@@ -339,4 +339,19 @@ public class Server extends JFrame {
         tableModel.addRow(new Object[]{group.isToDelete(), group.getName(), group.getUsers().size()});
     }
 
+    /**
+     * to delete client from Clients-Table
+     *
+     * @param username a Name of client
+     * @author kalnaasan
+     */
+    public static void deleteUserFromTable(String username) {
+        DefaultTableModel tblModel = (DefaultTableModel) Server.tableClients.getModel();
+        for (int i = 0; i < Server.tableClients.getRowCount(); i++) {
+            String clientUsername = (String) Server.tableClients.getValueAt(i, 1);
+            if (username.equals(clientUsername)) {
+                tblModel.removeRow(i);
+            }
+        }
+    }
 }
