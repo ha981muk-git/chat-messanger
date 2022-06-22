@@ -2,6 +2,7 @@ package edu.fra.uas.net.chat;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import edu.fra.uas.net.AbstractServer;
@@ -58,6 +59,9 @@ public class ChatServer extends AbstractServer {
                 case Parser.DEREGISTER:
                     this.deregisterClient(receivedData, srcAddress, srcPort);
                     break;
+                case Parser.SEARCH:
+                    this.sendListOfUsernames(receivedData, srcAddress, srcPort);
+                    break;
                 default:
                     break;
             }
@@ -108,6 +112,28 @@ public class ChatServer extends AbstractServer {
         String type = "DEREGISTERED";
         String msg = "You are disconnected to server!";
         Message message = new Message(sender, clientUsername, type, msg.getBytes());
+        this.sendResponse(Parser.createByteArray(message), srcAddress, srcPort);
+    }
+
+    /**
+     * to send a list of usernames to target client
+     *
+     * @param receivedData byte[]
+     * @param srcAddress   ip address of sender
+     * @param srcPort      port of sender
+     * @throws IOException Signals that an I/O exception to some sort has occurred.
+     *                     This class is the general class of exceptions produced by
+     *                     failed or interrupted I/O operations.
+     */
+    private void sendListOfUsernames(byte[] receivedData, String srcAddress, int srcPort) throws IOException {
+        String[] usernames = new String[users.size()];
+        for (int i = 0; i < users.size(); i++) {
+            usernames[i] = users.get(i).getUsername();
+        }
+        String sender = "server";
+        String receiver = Parser.getSenderFromBytes(receivedData);
+        byte[] content = Arrays.toString(usernames).getBytes();
+        Message message = new Message(sender, receiver, "string", content);
         this.sendResponse(Parser.createByteArray(message), srcAddress, srcPort);
     }
 
