@@ -6,10 +6,11 @@ import java.util.Arrays;
 import java.util.List;
 
 import edu.fra.uas.net.AbstractServer;
-import edu.fra.uas.net.gui.Server;
 import edu.fra.uas.net.model.Message;
 import edu.fra.uas.net.model.User;
 import edu.fra.uas.net.utill.Log;
+import edu.fra.uas.net.utill.Observable;
+import edu.fra.uas.net.utill.Observer;
 import edu.fra.uas.net.utill.Parser;
 
 /**
@@ -21,6 +22,7 @@ public class ChatServer extends AbstractServer {
 
     private final Log log = new Log();
     private List<User> users = new ArrayList<>();
+    private Observable observable = new Observable();
 
     /**
      * default constructor
@@ -71,6 +73,24 @@ public class ChatServer extends AbstractServer {
     }
 
     /**
+     * to attach Observer
+     *
+     * @param observer {@link Observer}
+     */
+    public void attach(Observer observer) {
+        observable.attach(observer);
+    }
+
+    /**
+     * to detach {@link Observer}
+     *
+     * @param observer a Observer
+     */
+    public void detach(Observer observer) {
+        observable.detach(observer);
+    }
+
+    /**
      * to register a client
      *
      * @param receivedData byte[]
@@ -83,7 +103,7 @@ public class ChatServer extends AbstractServer {
     private void registerClient(byte[] receivedData, String srcAddress, int srcPort) throws IOException {
         User client = Parser.convertBytesToUser(receivedData);
         users.add(client);
-        Server.addClientToTable(client);
+        observable.fireUpdateAddClient(client);
         log.info("REGISTER: " + srcAddress + ":" + srcPort + " // " + client.getUsername());
         String sender = "server";
         String receiver = client.getUsername();
@@ -107,7 +127,7 @@ public class ChatServer extends AbstractServer {
         String clientUsername = Parser.getSenderFromBytes(receivedData);
         log.info("REGISTER: " + srcAddress + ":" + srcPort + " // " + clientUsername);
         users.remove(this.getUser(clientUsername));
-        Server.deleteUserFromTable(clientUsername);
+        observable.fireUpdateDeleteClient(clientUsername);
         String sender = "server";
         String type = "DEREGISTERED";
         String msg = "You are disconnected to server!";
