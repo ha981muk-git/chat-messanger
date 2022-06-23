@@ -107,9 +107,8 @@ public class ChatServer extends AbstractServer {
         log.info("REGISTER: " + srcAddress + ":" + srcPort + " // " + client.getUsername());
         String sender = "server";
         String receiver = client.getUsername();
-        String type = "REGISTERED";
         String msg = "You are connected to server!";
-        Message message = new Message(sender, receiver, type, msg.getBytes());
+        Message message = new Message(sender, receiver, Parser.MESSAGE_TYPE_REGISTER, msg.getBytes());
         this.sendResponse(Parser.createByteArray(message), client.getHost(), client.getPort());
     }
 
@@ -125,13 +124,12 @@ public class ChatServer extends AbstractServer {
      */
     private void deregisterClient(byte[] receivedData, String srcAddress, int srcPort) throws IOException {
         String clientUsername = Parser.getSenderFromBytes(receivedData);
-        log.info("REGISTER: " + srcAddress + ":" + srcPort + " // " + clientUsername);
+        log.info("DEREGISTER: " + srcAddress + ":" + srcPort + " // " + clientUsername);
         users.remove(this.getUser(clientUsername));
         observable.fireUpdateDeleteClient(clientUsername);
         String sender = "server";
-        String type = "DEREGISTERED";
         String msg = "You are disconnected to server!";
-        Message message = new Message(sender, clientUsername, type, msg.getBytes());
+        Message message = new Message(sender, clientUsername, Parser.MESSAGE_TYPE_DEREGISTER, msg.getBytes());
         this.sendResponse(Parser.createByteArray(message), srcAddress, srcPort);
     }
 
@@ -153,7 +151,7 @@ public class ChatServer extends AbstractServer {
         String sender = "server";
         String receiver = Parser.getSenderFromBytes(receivedData);
         byte[] content = Arrays.toString(usernames).getBytes();
-        Message message = new Message(sender, receiver, "string", content);
+        Message message = new Message(sender, receiver, Parser.MESSAGE_TYPE_SEARCH, content);
         this.sendResponse(Parser.createByteArray(message), srcAddress, srcPort);
     }
 
