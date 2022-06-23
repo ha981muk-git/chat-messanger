@@ -243,9 +243,9 @@ public class Server extends JFrame {
         tableClients.setBorder(UIManager.getBorder("CheckBox.border"));
         tableClients.setBackground(Color.WHITE);
 
-        btnDeleteClient.addActionListener(new ActionListener() {
+        btnDeleteClient.addActionListener(new ActionListener() { //Client 
             public void actionPerformed(ActionEvent e) {
-                btnDeleteActionPerformed(tableClients);
+                btnDeleteActionPerformedUsers(tableClients);
             }
         });
         btnDeleteClient.setBounds(30, 164, 89, 23);
@@ -273,9 +273,9 @@ public class Server extends JFrame {
             }
         });
 
-        btnDeleteGroup.addActionListener(new ActionListener() {
+        btnDeleteGroup.addActionListener(new ActionListener() {   //Delete Group
             public void actionPerformed(ActionEvent e) {
-                btnDeleteActionPerformed(tableGroups);
+                btnDeleteActionPerformedGroups(tableGroups);
             }
         });
         btnDeleteGroup.setBounds(30, 164, 89, 23);
@@ -303,14 +303,28 @@ public class Server extends JFrame {
         setVisible(true);
     }
 
-    private void btnDeleteActionPerformed(JTable jTable) {
+    private void btnDeleteActionPerformedUsers(JTable jTable) {  
         DefaultTableModel tblModel = (DefaultTableModel) jTable.getModel();
         int countRow = jTable.getRowCount();
-        for (int i = 0; i < countRow; i++) {
+        for (int i = 0 ; i < countRow; i++) {
             boolean check = (boolean) jTable.getValueAt(i, 0);
             if (check) {
                 tblModel.removeRow(i);
                 users.remove(i);
+                i--;
+                countRow--;
+            }
+        }
+    }
+    
+    private void btnDeleteActionPerformedGroups(JTable jTable) {  
+        DefaultTableModel tblModel = (DefaultTableModel) jTable.getModel();
+        int countRow = jTable.getRowCount();
+        for (int i = 0 ; i < countRow; i++) {
+            boolean check = (boolean) jTable.getValueAt(i, 0);
+            if (check) {
+                tblModel.removeRow(i);
+                groups.remove(i);
                 i--;
                 countRow--;
             }
@@ -345,7 +359,7 @@ public class Server extends JFrame {
      * @param username a Name of client
      * @author kalnaasan
      */
-    public static void deleteUserFromTable(String username) {
+    public static void deleteUserFromTable(String username) {  
         DefaultTableModel tblModel = (DefaultTableModel) Server.tableClients.getModel();
         for (int i = 0; i < Server.tableClients.getRowCount(); i++) {
             String clientUsername = (String) Server.tableClients.getValueAt(i, 1);
