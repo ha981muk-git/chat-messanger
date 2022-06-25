@@ -1,8 +1,11 @@
 package edu.fra.uas.net.chat;
 
 import java.io.IOException;
+
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.List;
 
 import edu.fra.uas.net.Client;
 import edu.fra.uas.net.model.Message;
@@ -19,6 +22,8 @@ public class ChatClient extends Client {
 
     private User user;
     private static final Log LOG = new Log();
+    private List<Message> messages = new ArrayList<>();
+    private MessagePuller messagePuller;
 
     /**
      * default constructor
@@ -36,13 +41,56 @@ public class ChatClient extends Client {
         super(serverAddress, serverPort, bindAddress, port);
 
         user = new User(username, bindAddress, port);
+
         try {
             this.sendRequest(Parser.createByteArray(username, bindAddress, port));
-            Message message = Parser.convertBytesToMessage(this.received());
-            LOG.info(new String(message.getContent()));
+//            Message message = Parser.convertBytesToMessage(this.received());
+//            LOG.info(new String(message.getContent()));
         } catch (IOException e) {
             e.printStackTrace();
         }
+        messagePuller = new MessagePuller();
+        this.startListeningToMessage();
+    }
+
+    private class MessagePuller extends Thread {
+        private boolean active = true;
+        private static final int TIME_SLEEP = 5000;
+        private final byte[] puller = Parser.createByteArray(Parser.POLLER, user.getUsername());
+
+        @Override
+        public void run() {
+            while (this.active) {
+                // send Message to ask the server for newly received messages
+                try {
+                    sendRequest(this.puller);
+                    Thread.sleep(MessagePuller.TIME_SLEEP);
+                    byte[] data = receivedResponse();
+                    Message message = Parser.convertBytesToMessage(data);
+                    messages.add(message);
+                } catch (IOException | InterruptedException e) {
+//                    e.printStackTrace();
+//                    this.active = false;
+                    LOG.info("receiving ...");
+                }
+            }
+        }
+
+    }
+
+    /**
+     * to start client to receive messages
+     */
+    private void startListeningToMessage() {
+
+        this.messagePuller.start();
+    }
+
+    /**
+     * to stop client to receive messages
+     */
+    public void stopListeningToMessage() {
+        messagePuller.stop();
     }
 
     public User getUser() {
@@ -69,12 +117,10 @@ public class ChatClient extends Client {
 
     /**
      * to deregister a client
-     *
-     * @return byte[]
      */
-    public Message deregister() throws IOException {
+    public void deregister() throws IOException {
         this.sendRequest(Parser.createByteArray(Parser.DEREGISTER, user.getUsername()));
-        return Parser.convertBytesToMessage(this.received());
+        this.stopListeningToMessage();
     }
 
 }
