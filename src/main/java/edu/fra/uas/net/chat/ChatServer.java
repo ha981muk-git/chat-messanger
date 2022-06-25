@@ -22,6 +22,7 @@ public class ChatServer extends AbstractServer {
 
     private final Log log = new Log();
     private List<User> users = new ArrayList<>();
+    private List<Message> messages = new ArrayList<>();
     private Observable observable = new Observable();
 
     /**
@@ -63,6 +64,9 @@ public class ChatServer extends AbstractServer {
                     break;
                 case Parser.SEARCH:
                     this.sendListOfUsernames(receivedData, srcAddress, srcPort);
+                    break;
+                case Parser.POLLER:
+                    this.sendMessages(receivedData, srcAddress, srcPort);
                     break;
                 default:
                     break;
@@ -109,8 +113,8 @@ public class ChatServer extends AbstractServer {
         String receiver = client.getUsername();
         String msg = "You are connected to server!";
         Message message = new Message(sender, receiver, Parser.MESSAGE_TYPE_REGISTER, msg.getBytes());
-        this.sendResponse(Parser.createByteArray(message), client.getHost(), client.getPort());
-    }
+        messages.add(message);
+}
 
     /**
      * to deregister a client
@@ -130,7 +134,7 @@ public class ChatServer extends AbstractServer {
         String sender = "server";
         String msg = "You are disconnected to server!";
         Message message = new Message(sender, clientUsername, Parser.MESSAGE_TYPE_DEREGISTER, msg.getBytes());
-        this.sendResponse(Parser.createByteArray(message), srcAddress, srcPort);
+        messages.add(message);
     }
 
     /**
@@ -152,7 +156,29 @@ public class ChatServer extends AbstractServer {
         String receiver = Parser.getSenderFromBytes(receivedData);
         byte[] content = Arrays.toString(usernames).getBytes();
         Message message = new Message(sender, receiver, Parser.MESSAGE_TYPE_SEARCH, content);
-        this.sendResponse(Parser.createByteArray(message), srcAddress, srcPort);
+        messages.add(message);
+}
+
+    /**
+     * to send messages to target client
+     *
+     * @param receivedData byte[]
+     * @param srcAddress   ip address of sender
+     * @param srcPort      port of sender
+     * @throws IOException Signals that an I/O exception to some sort has occurred.
+     *                     This class is the general class of exceptions produced by
+     *                     failed or interrupted I/O operations.
+     */
+    private void sendMessages(byte[] data, String srcAddress, int srcPort) throws IOException, InterruptedException {
+        String targetClient = Parser.getSenderFromBytes(data);
+        for (int i = 0; i < messages.size();i++) {
+            Message message = messages.get(i);
+            if (message.getReceiver().equals(targetClient)) {
+                this.sendResponse(Parser.createByteArray(message), srcAddress, srcPort);
+                messages.remove(message);
+                break;
+            }
+        }
     }
 
     /**
