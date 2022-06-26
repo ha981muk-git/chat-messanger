@@ -195,4 +195,10 @@ public class ChatServer extends AbstractServer {
         }
         return null;
     }
+
+    public void deleteUser(int index){
+        if(index < users.size()){
+            users.remove(index);
+        }
+    }
 }
