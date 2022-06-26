@@ -23,6 +23,7 @@ import javax.swing.table.DefaultTableModel;
 import edu.fra.uas.net.chat.ChatServer;
 import edu.fra.uas.net.model.Group;
 import edu.fra.uas.net.model.User;
+import edu.fra.uas.net.utill.Observer;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -82,6 +83,7 @@ public class Server extends JFrame {
      * @param args all variables
      */
     public static void main(String[] args) {
+
         users.add(new User("client1", "localhost", 1010));
         users.add(new User("client2", "localhost", 1011));
         users.add(new User("client3", "localhost", 1012));
@@ -163,6 +165,7 @@ public class Server extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 try {
                     Server.chatServer = new ChatServer(tfIPAdress.getText(), Integer.parseInt(tfPort.getText()));
+                    Server.attachObserver();
                     String infoMessage = "The Server is started!";
                     JOptionPane.showMessageDialog(null, infoMessage, "Server Info ", JOptionPane.INFORMATION_MESSAGE);
                     btnStartServer.setEnabled(false);
@@ -303,10 +306,10 @@ public class Server extends JFrame {
         setVisible(true);
     }
 
-    private void btnDeleteActionPerformedUsers(JTable jTable) {  
+    private void btnDeleteActionPerformedUsers(JTable jTable) {
         DefaultTableModel tblModel = (DefaultTableModel) jTable.getModel();
         int countRow = jTable.getRowCount();
-        for (int i = 0 ; i < countRow; i++) {
+        for (int i = 0; i < countRow; i++) {
             boolean check = (boolean) jTable.getValueAt(i, 0);
             if (check) {
                 tblModel.removeRow(i);
@@ -316,11 +319,11 @@ public class Server extends JFrame {
             }
         }
     }
-    
-    private void btnDeleteActionPerformedGroups(JTable jTable) {  
+
+    private void btnDeleteActionPerformedGroups(JTable jTable) {
         DefaultTableModel tblModel = (DefaultTableModel) jTable.getModel();
         int countRow = jTable.getRowCount();
-        for (int i = 0 ; i < countRow; i++) {
+        for (int i = 0; i < countRow; i++) {
             boolean check = (boolean) jTable.getValueAt(i, 0);
             if (check) {
                 tblModel.removeRow(i);
@@ -337,7 +340,7 @@ public class Server extends JFrame {
      * @param user A Client
      * @author M.Dawoud
      */
-    public static void addClientToTable(User user) {
+    private static void addClientToTable(User user) {
         DefaultTableModel tableModel = (DefaultTableModel) Server.tableClients.getModel();
         tableModel.addRow(new Object[]{user.isToDelete(), user.getUsername(), user.getHost(), user.getPort()});
     }
@@ -348,7 +351,7 @@ public class Server extends JFrame {
      * @param Group A Group of Clients
      * @author M.Dawoud
      */
-    public void addGroupToTable(Group group) {
+    private static void addGroupToTable(Group group) {
         DefaultTableModel tableModel = (DefaultTableModel) Server.tableGroups.getModel();
         tableModel.addRow(new Object[]{group.isToDelete(), group.getName(), group.getUsers().size()});
     }
@@ -359,7 +362,7 @@ public class Server extends JFrame {
      * @param username a Name of client
      * @author kalnaasan
      */
-    public static void deleteUserFromTable(String username) {  
+    private static void deleteUserFromTable(String username) {
         DefaultTableModel tblModel = (DefaultTableModel) Server.tableClients.getModel();
         for (int i = 0; i < Server.tableClients.getRowCount(); i++) {
             String clientUsername = (String) Server.tableClients.getValueAt(i, 1);
@@ -367,5 +370,47 @@ public class Server extends JFrame {
                 tblModel.removeRow(i);
             }
         }
+    }
+
+    /**
+     * to delete client from Clients-Table
+     *
+     * @param username a Name of client
+     * @author kalnaasan
+     */
+    private static void deleteGroupFromTable(String group) {
+        DefaultTableModel tblModel = (DefaultTableModel) Server.tableGroups.getModel();
+        for (int i = 0; i < Server.tableGroups.getRowCount(); i++) {
+            String groupName = (String) Server.tableClients.getValueAt(i, 1);
+            if (group.equals(groupName)) {
+                tblModel.removeRow(i);
+            }
+        }
+    }
+
+    private static void attachObserver(){
+        Server.chatServer.attach(
+                new Observer() {
+                    @Override
+                    public void addClient(User user) {
+                        addClientToTable(user);
+                    }
+
+                    @Override
+                    public void deleteClient(String username) {
+                        deleteUserFromTable(username);
+                    }
+
+                    @Override
+                    public void addGroup(Group group) {
+                        addGroupToTable(group);
+                    }
+
+                    @Override
+                    public void deleteGroup(String username) {
+                        deleteGroupFromTable(username);
+                    }
+                }
+        );
     }
 }

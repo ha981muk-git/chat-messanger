@@ -7,10 +7,9 @@ package edu.fra.uas.net.model;
  */
 public class Message {
 
-    private static final long serialVersionUID = -2413682340604592350L;
     private String sender;
     private String receiver;
-    private String type;
+    private int type;
     private byte[] content;
 
     /**
@@ -21,7 +20,7 @@ public class Message {
      * @param type     type of message
      * @param content  content of message
      */
-    public Message(String sender, String receiver, String type, byte[] content) {
+    public Message(String sender, String receiver, int type, byte[] content) {
         super();
         this.sender = sender;
         this.receiver = receiver;
@@ -45,11 +44,11 @@ public class Message {
         this.receiver = receiver;
     }
 
-    public String getType() {
+    public int getType() {
         return type;
     }
 
-    public void setType(String type) {
+    public void setType(int type) {
         this.type = type;
     }
 

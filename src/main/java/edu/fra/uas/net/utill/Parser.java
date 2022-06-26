@@ -19,7 +19,7 @@ import java.util.Arrays;
  * |4-byte|16-byte|16-byte |
  * |opcode |sender |receiver|
  * <p>
- * |4-byte|16-byte|16-byte |8-byte|any-length|
+ * |4-byte|16-byte|16-byte |4-byte|any-length|
  * |opcode|sender |receiver|type  |content   |
  * <p>
  * |4-byte|16-byte|16-byte |
@@ -58,7 +58,7 @@ public class Parser {
      * Byte 37 to Byte 44 present type
      */
     private static final int START_TYPE = START_RECEIVER + RECEIVER_LENGTH;
-    private static final int TYPE_LENGTH = 16;
+    private static final int TYPE_LENGTH = 4;
     /**
      * Byte 45 to end of byte[] present content
      */
@@ -72,13 +72,24 @@ public class Parser {
      */
     public static final int DEREGISTER = 0X02;
     /**
-     * opcode presents message
-     */
-    public static final int MESSAGE = 0x03;
-    /**
      * opcode to return a List of users
      */
-    public static final int SEARCH = 0x04;
+    public static final int SEARCH = 0x03;
+    /**
+     * opcode presents message
+     */
+    public static final int POLLER = 0x04;
+    /**
+     * opcode presents message
+     */
+    public static final int MESSAGE = 0x05;
+
+    public static final int MESSAGE_TYPE_REGISTER = 0x01;
+    public static final int MESSAGE_TYPE_DEREGISTER = 0x02;
+    public static final int MESSAGE_TYPE_SEARCH = 0x03;
+    public static final int MESSAGE_TYPE_MESSAGE = 0x04;
+    public static final int MESSAGE_TYPE_FILE = 0x05;
+
 
     private Parser() {
     }
@@ -225,7 +236,7 @@ public class Parser {
     public static Message convertBytesToMessage(byte[] data) {
         String sender = convertBytesToString(data, START_SENDER, START_SENDER + SENDER_LENGTH);
         String receiver = convertBytesToString(data, START_RECEIVER, START_RECEIVER + RECEIVER_LENGTH);
-        String type = convertBytesToString(data, START_TYPE, START_TYPE + TYPE_LENGTH);
+        int type = convertBytesToInt(data, START_TYPE, START_TYPE + TYPE_LENGTH);
         byte[] content = Arrays.copyOfRange(data, Parser.START_MESSAGE, data.length);
         return new Message(sender, receiver, type, content);
     }
@@ -268,5 +279,15 @@ public class Parser {
         }
 
         return new String(Arrays.copyOfRange(data, tmp, data.length));
+    }
+
+    /**
+     * to get receiver from byte[]
+     *
+     * @param data byte[]
+     * @return String {@link String}
+     */
+    public static String getReceiverFromBytes(byte[] data) {
+        return Parser.convertBytesToString(data, Parser.START_RECEIVER, Parser.START_RECEIVER + Parser.RECEIVER_LENGTH);
     }
 }
