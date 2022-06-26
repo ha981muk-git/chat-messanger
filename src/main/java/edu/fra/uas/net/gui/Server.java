@@ -4,6 +4,8 @@ import java.awt.EventQueue;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.SwingConstants;
+import javax.swing.WindowConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.JMenuBar;
 import javax.swing.JMenu;
@@ -25,13 +27,12 @@ import edu.fra.uas.net.model.Group;
 import edu.fra.uas.net.model.User;
 import edu.fra.uas.net.utill.Observer;
 
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.util.Objects;
 import javax.swing.JTabbedPane;
 
 /**
@@ -45,30 +46,41 @@ public class Server extends JFrame {
 
     private static final long serialVersionUID = 1L;
     private static ChatServer chatServer;
-    private static List<User> users = new ArrayList<>();
     private static List<Group> groups = new ArrayList<>();
 
-    private JPanel contentPane;
-    private final JMenuBar menuBar = new JMenuBar();
+    private JPanel contentPane = new JPanel();
+    private final JMenuBar menuBarServer = new JMenuBar();
     private final JMenu jMenuFile = new JMenu("File");
     private final JMenu jMenuHelp = new JMenu("Help");
     private final JMenuItem jMenuItemAbout = new JMenuItem("About");
     private final JMenuItem jMenuItemExit = new JMenuItem("Exit");
     private final JButton btnStartServer = new JButton("start Server");
-    private final JButton btnStop = new JButton("stop");
-    private final JLabel lblIPAdress = new JLabel("IP Adresse:");
-    private final JTextField tfIPAdress = new JTextField();
+    private final JButton btnStopServer = new JButton("stop");
+    private final JLabel lblIPAddress = new JLabel("IP Adresse:");
+    private final JTextField tfIPAddress = new JTextField();
     private final JLabel lblPort = new JLabel("Port:");
     private final JTextField tfPort = new JTextField();
-    private static final JTable tableClients = new JTable();
+    private JTable tableClients = new JTable();
     private final JButton btnDeleteClient = new JButton("Delete");
-    private final JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+    private final JTabbedPane tabbedPane = new JTabbedPane(SwingConstants.TOP);
     private final JPanel panelClients = new JPanel();
     private final JPanel panelGroups = new JPanel();
-    private final JScrollPane scrollPane = new JScrollPane();
-    private static final JTable tableGroups = new JTable();
-    private final JScrollPane scrollPane_1 = new JScrollPane();
+    private final JScrollPane scrollPaneClients = new JScrollPane();
+    private JTable tableGroups = new JTable();
+    private final JScrollPane scrollPaneGroups = new JScrollPane();
     private final JButton btnDeleteGroup = new JButton("Delete");
+    private static final String HOSTNAME = "127.0.0.1";
+    private static final int SERVER_PORT = 8080;
+    private static final int FRAME_X = 200;
+    private static final int FRAME_Y = 200;
+    private static final int FRAME_WIDTH = 600;
+    private static final int FRAME_HEIGHT = 340;
+    private static final int BORDER = 5;
+    private static final int BUTTON_HEIGHT = 25;
+    private static final int BUTTON_DELETE_X = 10;
+    private static final int BUTTON_DELETE_Y = 165;
+    private static final int SCROLL_TAB_PANE_HEIGHT = 149;
+    private static final int SCROLL_TAB_PANE_WIDTH = 549;
 
     /**
      * Create the frame.
@@ -84,15 +96,7 @@ public class Server extends JFrame {
      */
     public static void main(String[] args) {
 
-        users.add(new User("client1", "localhost", 1010));
-        users.add(new User("client2", "localhost", 1011));
-        users.add(new User("client3", "localhost", 1012));
-        users.add(new User("client4", "localhost", 1013));
-
-        Group group = new Group("Group1");
-        group.setUsers(users);
-
-        groups.add(group);
+        groups.add(new Group("Group1"));
         groups.add(new Group("Group2"));
         groups.add(new Group("Group3"));
         groups.add(new Group("Group4"));
@@ -115,12 +119,128 @@ public class Server extends JFrame {
      */
     private void initGUI() {
         setResizable(false);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setBounds(100, 100, 595, 339);
+        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        setBounds(Server.FRAME_X, Server.FRAME_Y, Server.FRAME_WIDTH, Server.FRAME_HEIGHT);
 
-        setJMenuBar(menuBar);
+        initMenuBar();
+        initAddActionListener();
+        initTables();
 
-        menuBar.add(jMenuFile);
+        contentPane.setBorder(new EmptyBorder(Server.BORDER, Server.BORDER, Server.BORDER, Server.BORDER));
+        contentPane.setLayout(null);
+
+        btnStartServer.setBounds(10, 11, 120, Server.BUTTON_HEIGHT);
+        contentPane.add(btnStartServer);
+
+        btnStopServer.setEnabled(false);
+        btnStopServer.setBounds(134, 11, 89, Server.BUTTON_HEIGHT);
+        contentPane.add(btnStopServer);
+
+        lblIPAddress.setBounds(244, 13, 92, 19);
+        contentPane.add(lblIPAddress);
+
+        tfIPAddress.setText(Server.HOSTNAME);
+        tfIPAddress.setColumns(10);
+        tfIPAddress.setBounds(336, 12, 96, 20);
+        contentPane.add(tfIPAddress);
+
+        lblPort.setBounds(442, 15, 40, 14);
+        contentPane.add(lblPort);
+
+        tfPort.setText(String.valueOf(Server.SERVER_PORT));
+        tfPort.setColumns(10);
+        tfPort.setBounds(492, 12, 67, 20);
+        contentPane.add(tfPort);
+
+        tabbedPane.setBounds(10, 47, 569, 226);
+        contentPane.add(tabbedPane);
+
+        panelClients.setLayout(null);
+        scrollPaneClients.setBounds(10, 11, Server.SCROLL_TAB_PANE_WIDTH, Server.SCROLL_TAB_PANE_HEIGHT);
+        scrollPaneClients.setViewportView(tableClients);
+        panelClients.add(scrollPaneClients);
+        tabbedPane.addTab("Clients", null, panelClients, null);
+
+        btnDeleteClient.setBounds(Server.BUTTON_DELETE_X, Server.BUTTON_DELETE_Y, 90, 25);
+        panelClients.add(btnDeleteClient);
+
+        panelGroups.setLayout(null);
+        scrollPaneGroups.setBounds(10, 11, Server.SCROLL_TAB_PANE_WIDTH, Server.SCROLL_TAB_PANE_HEIGHT);
+        scrollPaneGroups.setViewportView(tableGroups);
+        panelGroups.add(scrollPaneGroups);
+        tabbedPane.addTab("Groups", null, panelGroups, null);
+
+        btnDeleteGroup.setBounds(Server.BUTTON_DELETE_X, Server.BUTTON_DELETE_Y, 90, 25);
+        panelGroups.add(btnDeleteGroup);
+
+        for (Group group : groups) {
+            addGroupToTable(group);
+        }
+        this.setContentPane(contentPane);
+    }
+
+    /**
+     * to add Menubar to GUI
+     */
+    private void initMenuBar() {
+        this.setJMenuBar(this.menuBarServer);
+        this.jMenuFile.add(this.jMenuItemExit);
+        this.menuBarServer.add(this.jMenuFile);
+        this.jMenuHelp.add(this.jMenuItemAbout);
+        this.menuBarServer.add(this.jMenuHelp);
+    }
+
+    /**
+     * to add Clients- andGroups-Table to GUI
+     */
+    private void initTables() {
+        Objects[][] data = new Objects[][]{};
+        String[] columnsClient = new String[]{"Checked", "UserName", "Host", "Port"};
+        String[] columnsGroup = new String[]{"Checked", "Name of Group", "Count of Clients"};
+
+        DefaultTableModel tableModelClients = new DefaultTableModel(data, columnsClient) {
+            Class[] columnTypes = new Class[]{Boolean.class, String.class, String.class, Integer.class};
+
+            public Class getColumnClass(int columnIndex) {
+                return columnTypes[columnIndex];
+            }
+        };
+
+        tableClients.setModel(tableModelClients);
+        this.setDesignTable(tableClients);
+
+        DefaultTableModel tableModelGroups = new DefaultTableModel(data, columnsGroup) {
+            Class[] columnTypes = new Class[]{Boolean.class, String.class, Integer.class};
+
+            public Class getColumnClass(int columnIndex) {
+                return columnTypes[columnIndex];
+            }
+        };
+        tableGroups.setModel(tableModelGroups);
+        this.setDesignTable(tableGroups);
+    }
+
+    /**
+     * to set design to table
+     *
+     * @param table {@link JTable}
+     */
+    private void setDesignTable(JTable table) {
+        table.setToolTipText("");
+        table.setSurrendersFocusOnKeystroke(true);
+        table.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+        table.setForeground(Color.BLACK);
+        table.setFont(new Font("Sitka Text", Font.PLAIN, 11));
+        table.setFillsViewportHeight(true);
+        table.setColumnSelectionAllowed(true);
+        table.setBorder(UIManager.getBorder("CheckBox.border"));
+        table.setBackground(Color.WHITE);
+    }
+
+    /**
+     * to add action listener
+     */
+    private void initAddActionListener() {
         jMenuItemExit.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 int dialogButton = JOptionPane.YES_NO_OPTION;
@@ -130,178 +250,75 @@ public class Server extends JFrame {
                     dispose();
                     System.exit(NORMAL);
                 }
-
             }
         });
-
-        jMenuFile.add(jMenuItemExit);
-
-        menuBar.add(jMenuHelp);
         jMenuItemAbout.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                String infoMessage = "This Chat Server is developed by Mohammed Dawoud, Kaddour Alnaasan and Harsh Mukhiya";
-
+                String infoMessage = "This Chat Server is developed by ";
+                infoMessage += "Mohammed Dawoud, Kaddour Alnaasan and Harsh Mukhiya";
                 JOptionPane.showMessageDialog(null, infoMessage, "About Chat_Server ", JOptionPane.INFORMATION_MESSAGE);
             }
         });
-        jMenuItemAbout.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-
-                jMenuItemExit.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-
-                    }
-                });
-            }
-        });
-
-        jMenuHelp.add(jMenuItemAbout);
-        contentPane = new JPanel();
-        contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
-        setContentPane(contentPane);
-        contentPane.setLayout(null);
         btnStartServer.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                try {
-                    Server.chatServer = new ChatServer(tfIPAdress.getText(), Integer.parseInt(tfPort.getText()));
-                    Server.attachObserver();
-                    String infoMessage = "The Server is started!";
-                    JOptionPane.showMessageDialog(null, infoMessage, "Server Info ", JOptionPane.INFORMATION_MESSAGE);
-                    btnStartServer.setEnabled(false);
-                    btnStop.setEnabled(true);
-                } catch (IOException ioE) {
-                    ioE.printStackTrace();
-                }
+                startServer();
             }
         });
-        btnStartServer.setBounds(10, 11, 120, 23);
-
-        contentPane.add(btnStartServer);
-        btnStop.setEnabled(false);
-        btnStop.addActionListener(new ActionListener() {
+        btnStopServer.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                int dialogButton = JOptionPane.YES_NO_OPTION;
-                int dialogResult = JOptionPane.showConfirmDialog(null, "Do you want to stop the Server ?",
-                        "Server Info", dialogButton);
-                if (dialogResult == 0) {
-                    Server.chatServer.stopAndClose();
-                    btnStartServer.setEnabled(true);
-                    btnStop.setEnabled(false);
-                }
+                stopServer();
             }
         });
-        btnStop.setBounds(134, 11, 89, 23);
-
-        contentPane.add(btnStop);
-        lblIPAdress.setBounds(244, 13, 92, 19);
-
-        contentPane.add(lblIPAdress);
-        tfIPAdress.setColumns(10);
-        tfIPAdress.setBounds(336, 12, 96, 20);
-
-        contentPane.add(tfIPAdress);
-        lblPort.setBounds(442, 15, 40, 14);
-
-        contentPane.add(lblPort);
-        tfPort.setText("     ");
-        tfPort.setColumns(10);
-        tfPort.setBounds(492, 12, 67, 20);
-
-        contentPane.add(tfPort);
-
-        tabbedPane.setBounds(10, 47, 569, 226);
-
-        contentPane.add(tabbedPane);
-
-        tabbedPane.addTab("Clients", null, panelClients, null);
-        panelClients.setLayout(null);
-        scrollPane.setBounds(10, 11, 549, 149);
-
-        panelClients.add(scrollPane);
-        scrollPane.setViewportView(tableClients);
-        tableClients.setModel(
-                new DefaultTableModel(
-                        new Object[][]{
-                        },
-                        new String[]{
-                                "Checked", "UserName", "Host", "Port"
-                        }
-                ) {
-                    Class[] columnTypes = new Class[]{
-                            Boolean.class, String.class, String.class, Integer.class
-                    };
-
-                    public Class getColumnClass(int columnIndex) {
-                        return columnTypes[columnIndex];
-                    }
-                });
-        tableClients.setToolTipText("");
-        tableClients.setSurrendersFocusOnKeystroke(true);
-        tableClients.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
-        tableClients.setForeground(Color.BLACK);
-        tableClients.setFont(new Font("Sitka Text", Font.PLAIN, 11));
-        tableClients.setFillsViewportHeight(true);
-        tableClients.setColumnSelectionAllowed(true);
-        tableClients.setBorder(UIManager.getBorder("CheckBox.border"));
-        tableClients.setBackground(Color.WHITE);
-
-        btnDeleteClient.addActionListener(new ActionListener() { //Client 
+        btnDeleteClient.addActionListener(new ActionListener() { //Client
             public void actionPerformed(ActionEvent e) {
                 btnDeleteActionPerformedUsers(tableClients);
             }
         });
-        btnDeleteClient.setBounds(30, 164, 89, 23);
-        panelClients.add(btnDeleteClient);
-
-        tabbedPane.addTab("Groups", null, panelGroups, null);
-        panelGroups.setLayout(null);
-        scrollPane_1.setBounds(10, 11, 549, 149);
-
-        panelGroups.add(scrollPane_1);
-        scrollPane_1.setViewportView(tableGroups);
-        tableGroups.setModel(new DefaultTableModel(
-                new Object[][]{
-                },
-                new String[]{
-                        "Checked", "Name of Group", "Count of Clients"
-                }
-        ) {
-            Class[] columnTypes = new Class[]{
-                    Boolean.class, String.class, Integer.class
-            };
-
-            public Class getColumnClass(int columnIndex) {
-                return columnTypes[columnIndex];
-            }
-        });
-
         btnDeleteGroup.addActionListener(new ActionListener() {   //Delete Group
             public void actionPerformed(ActionEvent e) {
                 btnDeleteActionPerformedGroups(tableGroups);
             }
         });
-        btnDeleteGroup.setBounds(30, 164, 89, 23);
+    }
 
-        panelGroups.add(btnDeleteGroup);
-
-        tfIPAdress.setText("127.0.0.1");
-        tfPort.setText("8080");
-
-        for (int i = 0; i < users.size(); i++) {
-            Server.addClientToTable(users.get(i));
+    /**
+     * to start chatServer
+     */
+    private void startServer() {
+        try {
+            Server.chatServer = new ChatServer(tfIPAddress.getText(), Integer.parseInt(tfPort.getText()));
+            this.attachObserver();
+            btnStartServer.setEnabled(false);
+            btnStopServer.setEnabled(true);
+            tfIPAddress.setEnabled(false);
+            tfPort.setEnabled(false);
+            String infoMessage = "The Server is started!";
+            JOptionPane.showMessageDialog(null, infoMessage, "Server Info ", JOptionPane.INFORMATION_MESSAGE);
+        } catch (IOException ioE) {
+            ioE.printStackTrace();
         }
-        for (Group group : groups) {
-            this.addGroupToTable(group);
-        }
+    }
 
+    /**
+     * to stop chatServer
+     */
+    private void stopServer() {
+        int dialogButton = JOptionPane.YES_NO_OPTION;
+        int dialogResult = JOptionPane.showConfirmDialog(null, "Do you want to stop the Server ?",
+                "Server Info", dialogButton);
+        if (dialogResult == 0) {
+            Server.chatServer.stopAndClose();
+            btnStartServer.setEnabled(true);
+            btnStopServer.setEnabled(false);
+            tfIPAddress.setEnabled(true);
+            tfPort.setEnabled(true);
+        }
     }
 
     /**
      * Starts the already initialized frame, making it visible and ready to interact
      * with the user.
      */
-
     public void start() {
         setVisible(true);
     }
@@ -313,7 +330,6 @@ public class Server extends JFrame {
             boolean check = (boolean) jTable.getValueAt(i, 0);
             if (check) {
                 tblModel.removeRow(i);
-                users.remove(i);
                 i--;
                 countRow--;
             }
@@ -340,19 +356,19 @@ public class Server extends JFrame {
      * @param user A Client
      * @author M.Dawoud
      */
-    private static void addClientToTable(User user) {
-        DefaultTableModel tableModel = (DefaultTableModel) Server.tableClients.getModel();
+    private void addClientToTable(User user) {
+        DefaultTableModel tableModel = (DefaultTableModel) this.tableClients.getModel();
         tableModel.addRow(new Object[]{user.isToDelete(), user.getUsername(), user.getHost(), user.getPort()});
     }
 
     /**
      * to add Group to Groups-table
      *
-     * @param Group A Group of Clients
+     * @param group A Group of Clients
      * @author M.Dawoud
      */
-    private static void addGroupToTable(Group group) {
-        DefaultTableModel tableModel = (DefaultTableModel) Server.tableGroups.getModel();
+    private void addGroupToTable(Group group) {
+        DefaultTableModel tableModel = (DefaultTableModel) this.tableGroups.getModel();
         tableModel.addRow(new Object[]{group.isToDelete(), group.getName(), group.getUsers().size()});
     }
 
@@ -362,10 +378,10 @@ public class Server extends JFrame {
      * @param username a Name of client
      * @author kalnaasan
      */
-    private static void deleteUserFromTable(String username) {
-        DefaultTableModel tblModel = (DefaultTableModel) Server.tableClients.getModel();
-        for (int i = 0; i < Server.tableClients.getRowCount(); i++) {
-            String clientUsername = (String) Server.tableClients.getValueAt(i, 1);
+    private void deleteUserFromTable(String username) {
+        DefaultTableModel tblModel = (DefaultTableModel) this.tableClients.getModel();
+        for (int i = 0; i < this.tableClients.getRowCount(); i++) {
+            String clientUsername = (String) this.tableClients.getValueAt(i, 1);
             if (username.equals(clientUsername)) {
                 tblModel.removeRow(i);
             }
@@ -375,20 +391,23 @@ public class Server extends JFrame {
     /**
      * to delete client from Clients-Table
      *
-     * @param username a Name of client
+     * @param group a Name of client
      * @author kalnaasan
      */
-    private static void deleteGroupFromTable(String group) {
-        DefaultTableModel tblModel = (DefaultTableModel) Server.tableGroups.getModel();
-        for (int i = 0; i < Server.tableGroups.getRowCount(); i++) {
-            String groupName = (String) Server.tableClients.getValueAt(i, 1);
+    private void deleteGroupFromTable(String group) {
+        DefaultTableModel tblModel = (DefaultTableModel) this.tableGroups.getModel();
+        for (int i = 0; i < this.tableGroups.getRowCount(); i++) {
+            String groupName = (String) this.tableClients.getValueAt(i, 1);
             if (group.equals(groupName)) {
                 tblModel.removeRow(i);
             }
         }
     }
 
-    private static void attachObserver(){
+    /**
+     * to add Observer to Observable
+     */
+    private void attachObserver() {
         Server.chatServer.attach(
                 new Observer() {
                     @Override
