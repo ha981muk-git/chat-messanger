@@ -23,6 +23,7 @@ public class ChatClient extends Client {
     private User user;
     private static final Log LOG = new Log();
     private List<Message> messages = new ArrayList<>();
+    private String[] clients;
     private MessagePuller messagePuller;
 
     /**
@@ -53,9 +54,13 @@ public class ChatClient extends Client {
         this.startListeningToMessage();
     }
 
+    public void readClients() throws IOException {
+        this.sendRequest(Parser.createByteArray(Parser.SEARCH,user.getUsername()));
+    }
+
     private class MessagePuller extends Thread {
         private boolean active = true;
-        private static final int TIME_SLEEP = 5000;
+        private static final int TIME_SLEEP = 1000;
         private final byte[] puller = Parser.createByteArray(Parser.POLLER, user.getUsername());
 
         @Override
@@ -67,7 +72,7 @@ public class ChatClient extends Client {
                     Thread.sleep(MessagePuller.TIME_SLEEP);
                     byte[] data = receivedResponse();
                     Message message = Parser.convertBytesToMessage(data);
-                    messages.add(message);
+                    addMessage(message);
                 } catch (IOException | InterruptedException e) {
 //                    e.printStackTrace();
 //                    this.active = false;
@@ -91,6 +96,32 @@ public class ChatClient extends Client {
      */
     public void stopListeningToMessage() {
         messagePuller.stop();
+    }
+
+    private void addMessage(Message message) {
+        messages.add(message);
+        switch (message.getType()) {
+            case Parser.MESSAGE_TYPE_REGISTER:
+                LOG.info(new String(message.getContent()));
+                break;
+            case Parser.MESSAGE_TYPE_DEREGISTER:
+                LOG.info(new String(message.getContent()));
+                this.stopListeningToMessage();
+                this.stopAndClose();
+                break;
+            case Parser.MESSAGE_TYPE_SEARCH:
+                String tmpClients = new String(message.getContent());
+                LOG.info(tmpClients);
+                tmpClients = tmpClients.substring(1, tmpClients.length() - 1);
+                clients = tmpClients.split(",");
+                break;
+            case Parser.MESSAGE_TYPE_MESSAGE:
+                break;
+            case Parser.MESSAGE_TYPE_FILE:
+                break;
+            default:
+                break;
+        }
     }
 
     public User getUser() {
@@ -120,7 +151,9 @@ public class ChatClient extends Client {
      */
     public void deregister() throws IOException {
         this.sendRequest(Parser.createByteArray(Parser.DEREGISTER, user.getUsername()));
-        this.stopListeningToMessage();
     }
 
+    public String[] getClients() {
+        return clients;
+    }
 }
