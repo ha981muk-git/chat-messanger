@@ -74,4 +74,16 @@ public class Observable {
         }
     }
 
+    public void clientFireUpdateMessage(String msg){
+        for (Observer observer: observers){
+            observer.updateClientMessage(msg);
+        }
+    }
+    public void clientFireUpdateUsernames(String[] usernames){
+        for (Observer observer: observers){
+            observer.updateClientUsernames(usernames);
+        }
+    }
+
+
 }

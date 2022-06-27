@@ -18,4 +18,10 @@ public class Observer {
 
     public void deleteGroup(String group) {
     }
+
+    public void updateClientMessage(String msg) {
+    }
+
+    public void updateClientUsernames(String[] usernames) {
+    }
 }
