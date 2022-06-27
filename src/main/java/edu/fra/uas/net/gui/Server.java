@@ -25,6 +25,7 @@ import javax.swing.table.DefaultTableModel;
 import edu.fra.uas.net.chat.ChatServer;
 import edu.fra.uas.net.model.Group;
 import edu.fra.uas.net.model.User;
+import edu.fra.uas.net.utill.Constant;
 import edu.fra.uas.net.utill.Observer;
 
 import java.io.IOException;
@@ -33,6 +34,7 @@ import java.util.List;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.util.Objects;
+import java.util.Random;
 import javax.swing.JTabbedPane;
 
 /**
@@ -70,17 +72,7 @@ public class Server extends JFrame {
     private final JScrollPane scrollPaneGroups = new JScrollPane();
     private final JButton btnDeleteGroup = new JButton("Delete");
     private static final String HOSTNAME = "127.0.0.1";
-    private static final int SERVER_PORT = 8080;
-    private static final int FRAME_X = 200;
-    private static final int FRAME_Y = 200;
-    private static final int FRAME_WIDTH = 600;
-    private static final int FRAME_HEIGHT = 340;
-    private static final int BORDER = 5;
-    private static final int BUTTON_HEIGHT = 25;
-    private static final int BUTTON_DELETE_X = 10;
-    private static final int BUTTON_DELETE_Y = 165;
-    private static final int SCROLL_TAB_PANE_HEIGHT = 149;
-    private static final int SCROLL_TAB_PANE_WIDTH = 549;
+
 
     /**
      * Create the frame.
@@ -120,20 +112,20 @@ public class Server extends JFrame {
     private void initGUI() {
         setResizable(false);
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        setBounds(Server.FRAME_X, Server.FRAME_Y, Server.FRAME_WIDTH, Server.FRAME_HEIGHT);
+        setBounds(Constant.FRAME_X, Constant.FRAME_Y, Constant.FRAME_WIDTH, Constant.FRAME_HEIGHT);
 
         initMenuBar();
         initAddActionListener();
         initTables();
 
-        contentPane.setBorder(new EmptyBorder(Server.BORDER, Server.BORDER, Server.BORDER, Server.BORDER));
+        contentPane.setBorder(new EmptyBorder(Constant.BORDER, Constant.BORDER, Constant.BORDER, Constant.BORDER));
         contentPane.setLayout(null);
 
-        btnStartServer.setBounds(10, 11, 120, Server.BUTTON_HEIGHT);
+        btnStartServer.setBounds(10, 11, 120, Constant.BUTTON_HEIGHT);
         contentPane.add(btnStartServer);
 
         btnStopServer.setEnabled(false);
-        btnStopServer.setBounds(134, 11, 89, Server.BUTTON_HEIGHT);
+        btnStopServer.setBounds(134, 11, 89, Constant.BUTTON_HEIGHT);
         contentPane.add(btnStopServer);
 
         lblIPAddress.setBounds(244, 13, 92, 19);
@@ -147,7 +139,7 @@ public class Server extends JFrame {
         lblPort.setBounds(442, 15, 40, 14);
         contentPane.add(lblPort);
 
-        tfPort.setText(String.valueOf(Server.SERVER_PORT));
+        tfPort.setText(String.valueOf(Constant.SERVER_PORT));
         tfPort.setColumns(10);
         tfPort.setBounds(492, 12, 67, 20);
         contentPane.add(tfPort);
@@ -156,21 +148,21 @@ public class Server extends JFrame {
         contentPane.add(tabbedPane);
 
         panelClients.setLayout(null);
-        scrollPaneClients.setBounds(10, 11, Server.SCROLL_TAB_PANE_WIDTH, Server.SCROLL_TAB_PANE_HEIGHT);
+        scrollPaneClients.setBounds(10, 11, Constant.SCROLL_TAB_PANE_WIDTH, Constant.SCROLL_TAB_PANE_HEIGHT);
         scrollPaneClients.setViewportView(tableClients);
         panelClients.add(scrollPaneClients);
         tabbedPane.addTab("Clients", null, panelClients, null);
 
-        btnDeleteClient.setBounds(Server.BUTTON_DELETE_X, Server.BUTTON_DELETE_Y, 90, 25);
+        btnDeleteClient.setBounds(Constant.BUTTON_DELETE_X, Constant.BUTTON_DELETE_Y, 90, 25);
         panelClients.add(btnDeleteClient);
 
         panelGroups.setLayout(null);
-        scrollPaneGroups.setBounds(10, 11, Server.SCROLL_TAB_PANE_WIDTH, Server.SCROLL_TAB_PANE_HEIGHT);
+        scrollPaneGroups.setBounds(10, 11, Constant.SCROLL_TAB_PANE_WIDTH, Constant.SCROLL_TAB_PANE_HEIGHT);
         scrollPaneGroups.setViewportView(tableGroups);
         panelGroups.add(scrollPaneGroups);
         tabbedPane.addTab("Groups", null, panelGroups, null);
 
-        btnDeleteGroup.setBounds(Server.BUTTON_DELETE_X, Server.BUTTON_DELETE_Y, 90, 25);
+        btnDeleteGroup.setBounds(Constant.BUTTON_DELETE_X, Constant.BUTTON_DELETE_Y, 90, 25);
         panelGroups.add(btnDeleteGroup);
 
         for (Group group : groups) {
