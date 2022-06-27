@@ -11,6 +11,7 @@ import javax.swing.border.EmptyBorder;
 import edu.fra.uas.net.chat.ChatClient;
 import edu.fra.uas.net.model.User;
 import edu.fra.uas.net.utill.Constant;
+import edu.fra.uas.net.utill.Observer;
 
 import javax.swing.JMenuBar;
 import javax.swing.JMenu;
@@ -168,7 +169,7 @@ public class Client extends JFrame {
         lblServer.setBounds(6, -1, 90, 26);
         panelConfigServer.add(lblServer);
 
-        btnSaveConfig.setBounds(175, 235, 117, Constant.BUTTON_HEIGHT);
+        btnSaveConfig.setBounds(165, 235, 140, 30);
         panelConfigServerClient.add(btnSaveConfig);
 
         panelConfigClient.setLayout(null);
@@ -328,6 +329,11 @@ public class Client extends JFrame {
         });
         btnSearch.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                try {
+                    chatClient.readClients();
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
             }
         });
         btnFileAdd.addActionListener(new ActionListener() {
@@ -348,7 +354,32 @@ public class Client extends JFrame {
                 Integer.parseInt(textFieldClientPort.getText()),
                 textFieldClientUsername.getText()
         );
+        this.attachObserver();
     }
+
+    private void updateUsernamesList(String[] usernames) {
+        comboBoxUsernames.removeAllItems();
+        for (String username : usernames) {
+            comboBoxUsernames.addItem(username);
+        }
+    }
+
+    private void attachObserver() {
+        this.chatClient.attach(
+                new Observer() {
+                    @Override
+                    public void updateClientMessage(String msg) {
+                        JOptionPane.showMessageDialog(null, msg, "Client-Info", JOptionPane.INFORMATION_MESSAGE);
+                    }
+
+                    @Override
+                    public void updateClientUsernames(String[] usernames) {
+                        updateUsernamesList(usernames);
+                    }
+                }
+        );
+    }
+
     private void stopClient() throws IOException {
         this.chatClient.deregister();
     }
