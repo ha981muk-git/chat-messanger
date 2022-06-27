@@ -11,6 +11,8 @@ import edu.fra.uas.net.Client;
 import edu.fra.uas.net.model.Message;
 import edu.fra.uas.net.model.User;
 import edu.fra.uas.net.utill.Log;
+import edu.fra.uas.net.utill.Observable;
+import edu.fra.uas.net.utill.Observer;
 import edu.fra.uas.net.utill.Parser;
 
 /**
@@ -25,6 +27,7 @@ public class ChatClient extends Client {
     private List<Message> messages = new ArrayList<>();
     private String[] clients;
     private MessagePuller messagePuller;
+    private Observable observable = new Observable();
 
     /**
      * default constructor
@@ -103,9 +106,11 @@ public class ChatClient extends Client {
         switch (message.getType()) {
             case Parser.MESSAGE_TYPE_REGISTER:
                 LOG.info(new String(message.getContent()));
+                observable.clientFireUpdateMessage(new String(message.getContent()));
                 break;
             case Parser.MESSAGE_TYPE_DEREGISTER:
                 LOG.info(new String(message.getContent()));
+                observable.clientFireUpdateMessage(new String(message.getContent()));
                 this.stopListeningToMessage();
                 this.stopAndClose();
                 break;
@@ -113,7 +118,8 @@ public class ChatClient extends Client {
                 String tmpClients = new String(message.getContent());
                 LOG.info(tmpClients);
                 tmpClients = tmpClients.substring(1, tmpClients.length() - 1);
-                clients = tmpClients.split(",");
+                clients = tmpClients.split(", ");
+                observable.clientFireUpdateUsernames(clients);
                 break;
             case Parser.MESSAGE_TYPE_MESSAGE:
                 break;
@@ -156,4 +162,23 @@ public class ChatClient extends Client {
     public String[] getClients() {
         return clients;
     }
+
+    /**
+     * to attach Observer
+     *
+     * @param observer {@link Observer}
+     */
+    public void attach(Observer observer) {
+        observable.attach(observer);
+    }
+
+    /**
+     * to detach {@link Observer}
+     *
+     * @param observer a Observer
+     */
+    public void detach(Observer observer) {
+        observable.detach(observer);
+    }
+
 }
