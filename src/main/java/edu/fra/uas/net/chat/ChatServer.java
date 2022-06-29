@@ -68,6 +68,9 @@ public class ChatServer extends AbstractServer {
                 case Parser.POLLER:
                     this.sendMessages(receivedData, srcAddress, srcPort);
                     break;
+                    case Parser.MESSAGE:
+                        Message message = Parser.convertBytesToMessage(receivedData);
+                        messages.add(message);
                 default:
                     break;
             }
@@ -140,16 +143,21 @@ public class ChatServer extends AbstractServer {
         String sender = "server";
         String receiver = Parser.getSenderFromBytes(receivedData);
 
-        String[] usernames = new String[users.size()];
-        for (int i = 0; i < users.size(); i++) {
-            if (users.get(i).getUsername().equals(receiver)) {
-                usernames[i] = users.get(i).getUsername();
+        int length = users.size()-1;
+        int counter = 0;
+        if (length != 0){
+            String[] usernames = new String[length];
+            for (int i = 0; i < users.size(); i++) {
+                if (!users.get(i).getUsername().equals(receiver)) {
+                    usernames[counter] = users.get(i).getUsername();
+                    counter++;
+                }
             }
-        }
 
-        byte[] content = Arrays.toString(usernames).getBytes();
-        Message message = new Message(sender, receiver, Parser.MESSAGE_TYPE_SEARCH, content);
-        messages.add(message);
+            byte[] content = Arrays.toString(usernames).getBytes();
+            Message message = new Message(sender, receiver, Parser.MESSAGE_TYPE_SEARCH, content);
+            messages.add(message);
+        }
     }
 
     /**
