@@ -84,7 +84,7 @@ public class ChatClient extends Client {
                 } catch (IOException | InterruptedException e) {
 //                    e.printStackTrace();
 //                    this.active = false;
-                    LOG.info("receiving ...");
+//                    LOG.info("receiving ...");
                 }
             }
         }
@@ -126,6 +126,7 @@ public class ChatClient extends Client {
                 observable.clientFireUpdateUsernames(clients);
                 break;
             case Parser.MESSAGE_TYPE_MESSAGE:
+                LOG.info(message.getSender() +": " + new String(message.getContent()));
                 break;
             case Parser.MESSAGE_TYPE_FILE:
                 break;
