@@ -48,8 +48,6 @@ public class ChatClient extends Client {
 
         try {
             this.sendRequest(Parser.createByteArray(username, bindAddress, port));
-//            Message message = Parser.convertBytesToMessage(this.received());
-//            LOG.info(new String(message.getContent()));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -57,8 +55,15 @@ public class ChatClient extends Client {
         this.startListeningToMessage();
     }
 
+    /**
+     * A request is sent to server to send the list of clients back to client
+     *
+     * @throws IOException Signals that an I/O exception of some sort has occurred.
+     *                     This class is the general class of exceptions produced
+     *                     by failed or interrupted I/O operations.
+     */
     public void readClients() throws IOException {
-        this.sendRequest(Parser.createByteArray(Parser.SEARCH,user.getUsername()));
+        this.sendRequest(Parser.createByteArray(Parser.SEARCH, user.getUsername()));
     }
 
     private class MessagePuller extends Thread {
@@ -90,7 +95,6 @@ public class ChatClient extends Client {
      * to start client to receive messages
      */
     private void startListeningToMessage() {
-
         this.messagePuller.start();
     }
 
@@ -181,4 +185,15 @@ public class ChatClient extends Client {
         observable.detach(observer);
     }
 
+    /**
+     * to send a message to Server
+     *
+     * @param message {@link Message}
+     * @throws IOException Signals that an I/O exception of some sort has occurred.
+     *                     This class is the general class of exceptions produced
+     *                     by failed or interrupted I/O operations.
+     */
+    public void sendMessage(Message message) throws IOException {
+        this.sendRequest(Parser.createByteArray(message));
+    }
 }
