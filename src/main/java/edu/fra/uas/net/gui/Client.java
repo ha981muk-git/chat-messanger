@@ -1,17 +1,19 @@
 package edu.fra.uas.net.gui;
 
-import java.awt.Component;
 import java.awt.EventQueue;
 
+import javax.swing.DefaultListModel;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 
 import edu.fra.uas.net.chat.ChatClient;
-import edu.fra.uas.net.model.User;
+import edu.fra.uas.net.model.Message;
 import edu.fra.uas.net.utill.Constant;
 import edu.fra.uas.net.utill.Observer;
+import edu.fra.uas.net.utill.Parser;
 
 import javax.swing.JMenuBar;
 import javax.swing.JMenu;
@@ -21,12 +23,11 @@ import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 
 import java.awt.Panel;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.awt.Color;
 import javax.swing.JLabel;
@@ -38,6 +39,10 @@ import javax.swing.JComboBox;
 import javax.swing.border.LineBorder;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import javax.swing.JList;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import javax.swing.JScrollPane;
 
 /**
  * to start client-GUI
@@ -48,15 +53,16 @@ import java.awt.event.ActionEvent;
 public class Client extends JFrame {
 
     private ChatClient chatClient;
-    private static List<User> users = new ArrayList<>();
+    private String currentUsername;
+    private HashMap<String, List<Message>> messages = new HashMap<>();
 
-    private JPanel contentPane;
+    private final JPanel contentPane = new JPanel();
     private final JMenuBar menuBar = new JMenuBar();
     private final JMenu jMenuFile = new JMenu("File");
     private final JMenuItem jMenuItemExit = new JMenuItem("Exit");
     private final JMenu jMenuHelp = new JMenu("Help");
     private final JMenuItem jMenuItemAbout = new JMenuItem("About");
-    private final JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+    private final JTabbedPane tabbedPane = new JTabbedPane(SwingConstants.TOP);
     private final JPanel panelConfig = new JPanel();
     private final JPanel panelConfigServerClient = new JPanel();
     private final Panel panelConfigServer = new Panel();
@@ -76,7 +82,7 @@ public class Client extends JFrame {
     private final JTextField textFieldClientUsername = new JTextField();
     private final JPanel panelChat = new JPanel();
     private final JPanel panelClientsList = new JPanel();
-    private final JComboBox comboBoxUsernames = new JComboBox();
+    private final JComboBox<String> comboBoxUsernames = new JComboBox<>();
     private final JButton btnCreateGroup = new JButton("Create Group");
     private final JButton btnSearch = new JButton("Search");
     private final JPanel panelChatMessages = new JPanel();
@@ -85,13 +91,18 @@ public class Client extends JFrame {
     private final JButton btnMessageSend = new JButton("Send");
     private final JTextArea textAreaMessages = new JTextArea();
     private final JTextArea textAreaSendMessage = new JTextArea();
-    private final JPanel panelClients = new JPanel();
     private final JMenuItem mntmStopClient = new JMenuItem("Stop Client");
+    private final JList<String> listClients = new JList<>();
+    private final DefaultListModel<String> defaultListModel = new DefaultListModel<>();
+    private final JScrollPane scrollPaneSendMessage = new JScrollPane();
+    private final JScrollPane scrollPaneMessages = new JScrollPane();
 
     /**
      * Create the frame.
      */
     public Client() {
+        setTitle("Client-Chat");
+        this.setResizable(false);
         this.initialize();
         this.initMenuBar();
         this.initAddActionListener();
@@ -103,11 +114,6 @@ public class Client extends JFrame {
      * @param args all variables
      */
     public static void main(String[] args) {
-        users.add(new User("client1", "localhost", 1010));
-        users.add(new User("client2", "localhost", 1011));
-        users.add(new User("client3", "localhost", 1012));
-        users.add(new User("client4", "localhost", 1013));
-
         EventQueue.invokeLater(new Runnable() {
             public void run() {
                 try {
@@ -121,19 +127,25 @@ public class Client extends JFrame {
     }
 
     /**
+     * Starts the already initialized frame, making it visible and ready to interact
+     * with the user.
+     */
+    public void start() {
+        setVisible(true);
+    }
+
+    /**
      * init. GUI
      */
     private void initialize() {
-        setResizable(false);
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        setBounds(Constant.FRAME_X, Constant.FRAME_Y, 862, 624);
+        setBounds(Constant.FRAME_X, Constant.FRAME_Y, Constant.CLIENT_GUI_WIDTH, Constant.CLIENT_GUI_HEIGHT);
 
-        contentPane = new JPanel();
         contentPane.setBorder(new EmptyBorder(Constant.BORDER, Constant.BORDER, Constant.BORDER, Constant.BORDER));
         contentPane.setLayout(null);
         setContentPane(contentPane);
 
-        tabbedPane.setBounds(0, 0, 860, 569);
+        tabbedPane.setBounds(0, 0, Constant.CLIENT_GUI_WIDTH, 569);
         contentPane.add(tabbedPane);
 
         panelConfig.setLayout(null);
@@ -169,7 +181,7 @@ public class Client extends JFrame {
         lblServer.setBounds(6, -1, 90, 26);
         panelConfigServer.add(lblServer);
 
-        btnSaveConfig.setBounds(165, 235, 140, 30);
+        btnSaveConfig.setBounds(165, 235, 140, Constant.BUTTON_HEIGHT);
         panelConfigServerClient.add(btnSaveConfig);
 
         panelConfigClient.setLayout(null);
@@ -210,30 +222,34 @@ public class Client extends JFrame {
         tabbedPane.setEnabledAt(1, false);
 
         panelClientsList.setBorder(new LineBorder(new Color(0, 0, 0)));
-        panelClientsList.setBounds(5, 5, 200, 530);
+        panelClientsList.setBounds(Constant.COMPONENT_X5, Constant.COMPONENT_Y5, 200, 530);
         panelClientsList.setLayout(null);
         panelChat.add(panelClientsList);
 
-        comboBoxUsernames.setBounds(5, 85, 190, Constant.BUTTON_HEIGHT);
-        panelClientsList.add(comboBoxUsernames);
-
-        btnCreateGroup.setBounds(5, 5, 190, Constant.BUTTON_HEIGHT);
+        btnCreateGroup.setBounds(
+                Constant.COMPONENT_X5, Constant.COMPONENT_Y5,
+                Constant.CLIENT_LIST_CLIENTS_WIDTH, Constant.BUTTON_HEIGHT);
         panelClientsList.add(btnCreateGroup);
 
-        btnSearch.setBounds(5, 45, 190, Constant.BUTTON_HEIGHT);
+        btnSearch.setBounds(Constant.COMPONENT_X5, 45, Constant.CLIENT_LIST_CLIENTS_WIDTH, Constant.BUTTON_HEIGHT);
         panelClientsList.add(btnSearch);
 
-        panelClients.setBounds(5, 125, 190, 391);
-        panelClients.setLayout(null);
-        panelClientsList.add(panelClients);
+        comboBoxUsernames.setBounds(Constant.COMPONENT_X5, 85,
+                Constant.CLIENT_LIST_CLIENTS_WIDTH, Constant.BUTTON_HEIGHT);
+        panelClientsList.add(comboBoxUsernames);
+
+        listClients.setModel(defaultListModel);
+        listClients.setBounds(Constant.COMPONENT_X5, 125, Constant.CLIENT_LIST_CLIENTS_WIDTH, 393);
+
+        panelClientsList.add(listClients);
 
         panelChatMessages.setBorder(new LineBorder(new Color(0, 0, 0)));
-        panelChatMessages.setBounds(215, 5, 640, 530);
+        panelChatMessages.setBounds(215, Constant.COMPONENT_Y5, 640, 530);
         panelChatMessages.setLayout(null);
         panelChat.add(panelChatMessages);
 
         lblUsername.setFont(new Font("Dialog", Font.BOLD, 20));
-        lblUsername.setBounds(10, 10, 200, 15);
+        lblUsername.setBounds(Constant.COMPONENT_X10, 10, 200, 15);
         panelChatMessages.add(lblUsername);
 
         btnFileAdd.setBounds(508, 445, 120, Constant.BUTTON_HEIGHT);
@@ -241,31 +257,21 @@ public class Client extends JFrame {
 
         btnMessageSend.setBounds(508, 485, 120, Constant.BUTTON_HEIGHT);
         panelChatMessages.add(btnMessageSend);
+        scrollPaneMessages.setBounds(Constant.COMPONENT_X10, 39, 616, 397);
+
+        panelChatMessages.add(scrollPaneMessages);
+        scrollPaneMessages.setViewportView(textAreaMessages);
 
         textAreaMessages.setEditable(false);
-        textAreaMessages.setBounds(10, 39, 616, 397);
-        panelChatMessages.add(textAreaMessages);
+        scrollPaneSendMessage.setBounds(Constant.COMPONENT_X10, 445, 485, 70);
 
-        textAreaSendMessage.setBounds(10, 445, 485, 70);
-        panelChatMessages.add(textAreaSendMessage);
-
-        for (User user : users) {
-            Component[] components = panelClients.getComponents();
-            int length = components.length;
-            System.out.println(length);
-            JPanel jPanel = this.generateClientPanel(user);
-            if (length != 0) {
-                jPanel.setBounds(
-                        (int) components[length - 1].getBounds().getX(),
-                        (int) components[length - 1].getBounds().getY() + 80,
-                        (int) components[length - 1].getBounds().getWidth(),
-                        (int) components[length - 1].getBounds().getHeight()
-                );
-            }
-            panelClients.add(jPanel);
-        }
+        panelChatMessages.add(scrollPaneSendMessage);
+        scrollPaneSendMessage.setViewportView(textAreaSendMessage);
     }
 
+    /**
+     * init. MenuBar
+     */
     private void initMenuBar() {
         jMenuFile.add(mntmStopClient);
         jMenuFile.add(jMenuItemExit);
@@ -275,22 +281,13 @@ public class Client extends JFrame {
         setJMenuBar(menuBar);
     }
 
+    /**
+     * add Action Listener to Components
+     */
     private void initAddActionListener() {
         mntmStopClient.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                int dialogButton = JOptionPane.YES_NO_OPTION;
-                int dialogResult = JOptionPane.showConfirmDialog(null, "Do you want to stop the client ?",
-                        "Stop Client", dialogButton);
-                if (dialogResult == 0) {
-                    tabbedPane.setEnabledAt(0, true);
-                    tabbedPane.setEnabledAt(1, false);
-                    tabbedPane.setSelectedIndex(0);
-                    try {
-                        stopClient();
-                    } catch (IOException ex) {
-                        throw new RuntimeException(ex);
-                    }
-                }
+                stopClient();
             }
         });
         jMenuItemExit.addActionListener(new ActionListener() {
@@ -313,14 +310,7 @@ public class Client extends JFrame {
         });
         btnSaveConfig.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                tabbedPane.setEnabledAt(0, false);
-                tabbedPane.setEnabledAt(1, true);
-                tabbedPane.setSelectedIndex(1);
-                try {
-                    startClient();
-                } catch (SocketException | UnknownHostException ex) {
-                    ex.printStackTrace();
-                }
+                startClient();
             }
         });
         btnCreateGroup.addActionListener(new ActionListener() {
@@ -342,28 +332,137 @@ public class Client extends JFrame {
         });
         btnMessageSend.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                sendMessage();
+            }
+        });
+        comboBoxUsernames.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent arg0) {
+                String username = (String) comboBoxUsernames.getSelectedItem();
+                assert username != null;
+                if (!username.equalsIgnoreCase("select client")) {
+                    currentUsername = username;
+                    addClientToListClients(username);
+                }
+            }
+        });
+        listClients.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                currentUsername = listClients.getSelectedValue();
+                lblUsername.setText(currentUsername);
+                loadMessagesForSelectedClient(currentUsername);
             }
         });
     }
 
-    private void startClient() throws SocketException, UnknownHostException {
-        this.chatClient = new ChatClient(
-                textFieldServerIpAddress.getText(),
-                Integer.parseInt(textFieldServerPort.getText()),
-                textFieldClientIpAddress.getText(),
-                Integer.parseInt(textFieldClientPort.getText()),
-                textFieldClientUsername.getText()
-        );
-        this.attachObserver();
-    }
-
-    private void updateUsernamesList(String[] usernames) {
-        comboBoxUsernames.removeAllItems();
-        for (String username : usernames) {
-            comboBoxUsernames.addItem(username);
+    /**
+     * to stop connection with server
+     */
+    private void stopClient() {
+        int dialogButton = JOptionPane.YES_NO_OPTION;
+        int dialogResult = JOptionPane.showConfirmDialog(null, "Do you want to stop the client ?",
+                "Stop Client", dialogButton);
+        if (dialogResult == 0) {
+            tabbedPane.setEnabledAt(0, true);
+            tabbedPane.setEnabledAt(1, false);
+            tabbedPane.setSelectedIndex(0);
+            try {
+                this.chatClient.deregister();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
         }
     }
 
+    /**
+     * to start connection with server
+     */
+    private void startClient() {
+        tabbedPane.setEnabledAt(0, false);
+        tabbedPane.setEnabledAt(1, true);
+        tabbedPane.setSelectedIndex(1);
+        try {
+            this.chatClient = new ChatClient(
+                    textFieldServerIpAddress.getText(),
+                    Integer.parseInt(textFieldServerPort.getText()),
+                    textFieldClientIpAddress.getText(),
+                    Integer.parseInt(textFieldClientPort.getText()),
+                    textFieldClientUsername.getText()
+            );
+            this.attachObserver();
+        } catch (SocketException | UnknownHostException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    /**
+     * to send message to server
+     */
+    private void sendMessage() {
+        try {
+            String sender = this.chatClient.getUser().getUsername();
+            String receiver = this.currentUsername;
+            String msg = this.textAreaSendMessage.getText();
+            Message message = new Message(sender, receiver, Parser.MESSAGE_TYPE_MESSAGE, msg.getBytes());
+            List<Message> clientMessages = this.messages.get(receiver);
+            if (clientMessages == null) {
+                clientMessages = new ArrayList<>();
+            }
+            clientMessages.add(message);
+            messages.put(receiver, clientMessages);
+            chatClient.sendMessage(message);
+            this.textAreaSendMessage.setText("");
+            this.loadMessagesForSelectedClient(receiver);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * to add name of client to list
+     *
+     * @param username name of client
+     */
+    private void addClientToListClients(String username) {
+        boolean isFound = false;
+        String[] clients = new String[this.defaultListModel.getSize()];
+        for (int i = 0; i < this.defaultListModel.getSize(); i++) {
+            clients[i] = this.defaultListModel.getElementAt(i);
+        }
+
+        for (String client : clients) {
+            if (client.equalsIgnoreCase(username)) {
+                isFound = true;
+                break;
+            }
+        }
+
+        if (!isFound) {
+            this.defaultListModel.add(this.defaultListModel.size(), username);
+        }
+    }
+
+    /**
+     * to load chat of selected client in GUI
+     *
+     * @param username name of client
+     */
+    private void loadMessagesForSelectedClient(String username) {
+        this.textAreaMessages.setText("");
+        List<Message> messagesClient = this.messages.get(username);
+        if (messagesClient != null) {
+            for (Message message : messagesClient) {
+                if (message.getType() == Parser.MESSAGE_TYPE_MESSAGE) {
+                    this.textAreaMessages.append(
+                            message.getSender() + ": " + new String(message.getContent()) + "\n\n");
+                }
+            }
+        }
+    }
+
+    /**
+     * to start listen to backend
+     */
     private void attachObserver() {
         this.chatClient.attach(
                 new Observer() {
@@ -376,45 +475,43 @@ public class Client extends JFrame {
                     public void updateClientUsernames(String[] usernames) {
                         updateUsernamesList(usernames);
                     }
+
+                    @Override
+                    public void updateClientMessage(Message message) {
+                        addMessageToHasMap(message);
+                        addClientToListClients(message.getSender());
+                        if (currentUsername != null && currentUsername.equalsIgnoreCase(message.getSender())) {
+                            loadMessagesForSelectedClient(message.getSender());
+                        }
+                    }
                 }
         );
     }
 
-    private void stopClient() throws IOException {
-        this.chatClient.deregister();
+    /**
+     * get list of usernames from backend
+     *
+     * @param usernames names of clients
+     */
+    private void updateUsernamesList(String[] usernames) {
+        comboBoxUsernames.removeAllItems();
+        comboBoxUsernames.addItem("Select Client");
+        for (String username : usernames) {
+            comboBoxUsernames.addItem(username);
+        }
     }
 
     /**
-     * Starts the already initialized frame, making it visible and ready to interact
-     * with the user.
+     * add message to stack
+     *
+     * @param message {@link Message}
      */
-    public void start() {
-        setVisible(true);
-    }
-
-    private JPanel generateClientPanel(User user) {
-        JPanel panelClient = new JPanel();
-        panelClient.setBackground(Color.LIGHT_GRAY);
-        panelClient.setBounds(5, 5, 180, 70);
-        panelClient.setLayout(null);
-
-        JLabel lblClient = new JLabel(user.getUsername());
-        lblClient.setFont(new Font("Dialog", Font.BOLD, 16));
-        lblClient.setBounds(12, 12, 70, 15);
-        panelClient.add(lblClient);
-
-        JLabel lblLastMessage = new JLabel("Typing...");
-        lblLastMessage.setFont(new Font("Dialog", Font.BOLD, 10));
-        lblLastMessage.setBounds(12, 39, 70, 15);
-        panelClient.add(lblLastMessage);
-
-        panelClient.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                JOptionPane.showMessageDialog(null, user.getUsername());
-            }
-        });
-
-        return panelClient;
+    private void addMessageToHasMap(Message message) {
+        List<Message> clientMessages = messages.get(message.getSender());
+        if (clientMessages == null) {
+            clientMessages = new ArrayList<>();
+        }
+        clientMessages.add(message);
+        messages.put(message.getSender(), clientMessages);
     }
 }
