@@ -1,6 +1,7 @@
 package edu.fra.uas.net.utill;
 
 import edu.fra.uas.net.model.Group;
+import edu.fra.uas.net.model.Message;
 import edu.fra.uas.net.model.User;
 
 public class Observer {
@@ -20,6 +21,8 @@ public class Observer {
     }
 
     public void updateClientMessage(String msg) {
+    }
+    public void updateClientMessage(Message message) {
     }
 
     public void updateClientUsernames(String[] usernames) {

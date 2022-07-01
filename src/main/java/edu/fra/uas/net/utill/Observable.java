@@ -1,6 +1,7 @@
 package edu.fra.uas.net.utill;
 
 import edu.fra.uas.net.model.Group;
+import edu.fra.uas.net.model.Message;
 import edu.fra.uas.net.model.User;
 
 import java.util.ArrayList;
@@ -77,6 +78,11 @@ public class Observable {
     public void clientFireUpdateMessage(String msg){
         for (Observer observer: observers){
             observer.updateClientMessage(msg);
+        }
+    }
+    public void clientFireUpdateMessage(Message message){
+        for (Observer observer: observers){
+            observer.updateClientMessage(message);
         }
     }
     public void clientFireUpdateUsernames(String[] usernames){
