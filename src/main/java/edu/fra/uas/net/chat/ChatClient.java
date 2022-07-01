@@ -120,13 +120,12 @@ public class ChatClient extends Client {
                 break;
             case Parser.MESSAGE_TYPE_SEARCH:
                 String tmpClients = new String(message.getContent());
-                LOG.info(tmpClients);
                 tmpClients = tmpClients.substring(1, tmpClients.length() - 1);
                 clients = tmpClients.split(", ");
                 observable.clientFireUpdateUsernames(clients);
                 break;
             case Parser.MESSAGE_TYPE_MESSAGE:
-                LOG.info(message.getSender() +": " + new String(message.getContent()));
+                observable.clientFireUpdateMessage(message);
                 break;
             case Parser.MESSAGE_TYPE_FILE:
                 break;
