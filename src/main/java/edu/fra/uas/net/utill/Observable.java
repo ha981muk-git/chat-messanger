@@ -75,21 +75,36 @@ public class Observable {
         }
     }
 
-    public void clientFireUpdateMessage(String msg){
-        for (Observer observer: observers){
+    /**
+     * to send message as {@link  String} to GUI
+     *
+     * @param msg a message
+     */
+    public void clientFireUpdateMessage(String msg) {
+        for (Observer observer : observers) {
             observer.updateClientMessage(msg);
         }
     }
-    public void clientFireUpdateMessage(Message message){
-        for (Observer observer: observers){
+
+    /**
+     * to send message as {@link Message} to GUI
+     *
+     * @param message message
+     */
+    public void clientFireUpdateMessage(Message message) {
+        for (Observer observer : observers) {
             observer.updateClientMessage(message);
         }
     }
-    public void clientFireUpdateUsernames(String[] usernames){
-        for (Observer observer: observers){
+
+    /**
+     * to send a list of username to GUI
+     *
+     * @param usernames names of clients
+     */
+    public void clientFireUpdateUsernames(String[] usernames) {
+        for (Observer observer : observers) {
             observer.updateClientUsernames(usernames);
         }
     }
-
-
 }
