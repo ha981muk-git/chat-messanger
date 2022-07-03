@@ -4,6 +4,7 @@ import edu.fra.uas.net.model.Message;
 import edu.fra.uas.net.model.User;
 
 import java.math.BigInteger;
+import java.net.PasswordAuthentication;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
@@ -24,6 +25,21 @@ import java.util.Arrays;
  * <p>
  * |4-byte|16-byte|16-byte |
  * |opcode|sender |receiver|
+ * <p> Create Group <br>
+ * |4-byte|16-byte|16-byte |16-byte      |
+ * |opcode|sender |receiver|name of group|
+ * <p> Join Group <br>
+ * |4-byte|16-byte|16-byte |16-byte      |
+ * |opcode|sender |receiver|name of group|
+ * <p> Join Group <br>
+ * |4-byte|16-byte|16-byte |16-byte      |
+ * |opcode|sender |receiver|name of group|
+ * <p> Leave Group <br>
+ * |4-byte|16-byte|16-byte |16-byte      |
+ * |opcode|sender |receiver|name of group|
+ * <p> Message to Group <br>
+ * |4-byte|16-byte|16-byte |16-byte      |4-byte|any-length|
+ * |opcode|sender |receiver|name of group|type  |content   |
  *
  * @author kalnaasan
  */
@@ -60,6 +76,11 @@ public class Parser {
     private static final int START_TYPE = START_RECEIVER + RECEIVER_LENGTH;
     private static final int TYPE_LENGTH = 4;
     /**
+     * Byte 37 to Byte 44 present name of group
+     */
+    private static final int START_GROUP_NAME = START_RECEIVER + RECEIVER_LENGTH;
+    private static final int GROUP_NAME_LENGTH = 16;
+    /**
      * Byte 45 to end of byte[] present content
      */
     private static final int START_MESSAGE = START_TYPE + TYPE_LENGTH;
@@ -83,7 +104,9 @@ public class Parser {
      * opcode presents message
      */
     public static final int MESSAGE = 0x05;
-
+    public static final int GROUP_CREATE = 0x06;
+    public static final int GROUP_JOIN = 0x07;
+    public static final int GROUP_LEAVE = 0x08;
     public static final int MESSAGE_TYPE_REGISTER = 0x01;
     public static final int MESSAGE_TYPE_DEREGISTER = 0x02;
     public static final int MESSAGE_TYPE_SEARCH = 0x03;
@@ -289,5 +312,14 @@ public class Parser {
      */
     public static String getReceiverFromBytes(byte[] data) {
         return Parser.convertBytesToString(data, Parser.START_RECEIVER, Parser.START_RECEIVER + Parser.RECEIVER_LENGTH);
+    }
+    /**
+     * to get name of group from byte[]
+     *
+     * @param data byte[]
+     * @return String {@link String}
+     */
+    public static String getGroupNameFromBytes(byte[] data) {
+        return Parser.convertBytesToString(data, Parser.START_GROUP_NAME, Parser.START_GROUP_NAME + Parser.GROUP_NAME_LENGTH);
     }
 }
