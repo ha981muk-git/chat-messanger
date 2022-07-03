@@ -21,7 +21,7 @@ import java.util.Arrays;
  * <p> Message <br>
  * |4-byte|16-byte|16-byte |4-byte|any-length|
  * |opcode|sender |receiver|type  |content   |
- * * <p> Get list of clients <br>
+ * <p> Get list of clients <br>
  * |4-byte|16-byte|16-byte |
  * |opcode|sender |receiver|
  * <p> Create Group <br>
