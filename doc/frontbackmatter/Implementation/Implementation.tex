@@ -21,12 +21,11 @@ After that, the other client must send the response back to the first client via
 
 
 \section{Solution}\label{sec:solution}
-After a lot of thinking, a solution was found to use the Thread class.
-The thread class must be implemented for client and server, so that the server receives the
-messages from the first client and at the same time forwards them to the right client and
-vice Versa.
-The thread for the client starts to call the method onReceive as rekrusion so that the client
-is always ready to receive the messages
+After a lot of thinking, a solution was found that uses the Thread class.
+The Thread class has to be implemented for the client, so that the client asks the asks the server
+if there are new messages for the client, if there are new messages they are sent one by one from
+the server to the client.
+This process is performed by the thread every second.
 
 
 \section{Server GUI}\label{sec:server-gui}
