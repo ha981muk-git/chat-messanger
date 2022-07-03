@@ -4,31 +4,27 @@ import edu.fra.uas.net.model.Message;
 import edu.fra.uas.net.model.User;
 
 import java.math.BigInteger;
-import java.net.PasswordAuthentication;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 /**
  * convert Byte[] to Object <br>
- * <p>
+ * <p> Bases Bytes Array <br>
  * |4-byte|16-byte|16-byte |
  * |opcode|sender |receiver|
- * <p>
+ * <p> Register by server <br>
  * |4-byte|16-bytes|16-bytes|16-bytes |2-bytes|
  * |opcode|sender  |receiver|Hostname |port   |
- * <p>
+ * <p> Deregister <br>
  * |4-byte|16-byte|16-byte |
  * |opcode |sender |receiver|
- * <p>
+ * <p> Message <br>
  * |4-byte|16-byte|16-byte |4-byte|any-length|
  * |opcode|sender |receiver|type  |content   |
- * <p>
+ * * <p> Get list of clients <br>
  * |4-byte|16-byte|16-byte |
  * |opcode|sender |receiver|
  * <p> Create Group <br>
- * |4-byte|16-byte|16-byte |16-byte      |
- * |opcode|sender |receiver|name of group|
- * <p> Join Group <br>
  * |4-byte|16-byte|16-byte |16-byte      |
  * |opcode|sender |receiver|name of group|
  * <p> Join Group <br>
@@ -313,6 +309,7 @@ public class Parser {
     public static String getReceiverFromBytes(byte[] data) {
         return Parser.convertBytesToString(data, Parser.START_RECEIVER, Parser.START_RECEIVER + Parser.RECEIVER_LENGTH);
     }
+
     /**
      * to get name of group from byte[]
      *
