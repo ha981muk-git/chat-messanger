@@ -13,7 +13,7 @@ import java.util.Arrays;
  * |4-byte|16-byte|16-byte |
  * |opcode|sender |receiver|
  * <p> Register by server <br>
- * |4-byte|16-bytes|16-bytes|16-bytes |2-bytes|
+ * |4-byte|16-bytes|16-bytes|16-bytes |4-bytes|
  * |opcode|sender  |receiver|Hostname |port   |
  * <p> Deregister <br>
  * |4-byte|16-byte|16-byte |
@@ -100,15 +100,42 @@ public class Parser {
      * opcode presents message
      */
     public static final int MESSAGE = 0x05;
+    /**
+     * opcode presents message: create group
+     */
     public static final int GROUP_CREATE = 0x06;
+    /**
+     * opcode presents message; join group
+     */
     public static final int GROUP_JOIN = 0x07;
+    /**
+     * opcode presents message; leave group
+     */
     public static final int GROUP_LEAVE = 0x08;
+    /**
+     * opcode presents message; leave group
+     */
+    public static final int GROUP_MESSAGE = 0x09;
+    /**
+     * opcode presents type of message: registered
+     */
     public static final int MESSAGE_TYPE_REGISTER = 0x01;
+    /**
+     * opcode presents type of message: deregistered
+     */
     public static final int MESSAGE_TYPE_DEREGISTER = 0x02;
+    /**
+     * opcode presents type of message: searched
+     */
     public static final int MESSAGE_TYPE_SEARCH = 0x03;
+    /**
+     * opcode presents type of message: text
+     */
     public static final int MESSAGE_TYPE_MESSAGE = 0x04;
+    /**
+     * opcode presents type of message: file
+     */
     public static final int MESSAGE_TYPE_FILE = 0x05;
-
 
     private Parser() {
     }
@@ -168,26 +195,6 @@ public class Parser {
     }
 
     /**
-     * merge two arrays of bytes
-     *
-     * @param arr1 first array of bytes
-     * @param arr2 second array of bytes
-     * @return byte[]
-     */
-    public static byte[] mergeArrays(byte[] arr1, byte[] arr2) {
-        byte[] merge = new byte[arr1.length + arr2.length];
-        int counter = 0;
-        for (int i = 0; i < arr1.length; i++) {
-            merge[i] = arr1[i];
-            counter++;
-        }
-        for (byte b : arr2) {
-            merge[counter++] = b;
-        }
-        return merge;
-    }
-
-    /**
      * to create basic byte[] from opcode, sender and receiver
      *
      * @param opcode   type of content
@@ -205,14 +212,28 @@ public class Parser {
         return data;
     }
 
+    private static String deleteEmptyBytes(String text) {
+        int tmp = 0;
+        byte[] data = text.getBytes();
+        for (byte b : data) {
+            if (b == 0) tmp++;
+        }
+
+        return new String(Arrays.copyOfRange(data, tmp, data.length));
+    }
+
     /**
-     * detect opcode
+     * convert byte[] to Message
      *
-     * @param data byte[] of opcode
-     * @return integer
+     * @param data array of byte
+     * @return Message
      */
-    public static int detectType(byte[] data) {
-        return Parser.convertBytesToInt(data, START_OPCODE, Parser.START_OPCODE + Parser.OPCODE_LENGTH);
+    public static Message convertBytesToMessage(byte[] data) {
+        String sender = convertBytesToString(data, START_SENDER, START_SENDER + SENDER_LENGTH);
+        String receiver = convertBytesToString(data, START_RECEIVER, START_RECEIVER + RECEIVER_LENGTH);
+        int type = convertBytesToInt(data, START_TYPE, START_TYPE + TYPE_LENGTH);
+        byte[] content = Arrays.copyOfRange(data, Parser.START_MESSAGE, data.length);
+        return new Message(sender, receiver, type, content);
     }
 
     /**
@@ -226,6 +247,45 @@ public class Parser {
         String hostname = Parser.convertBytesToString(data, START_HOST, START_HOST + HOST_LENGTH);
         int port = Parser.convertBytesToInt(data, START_PORT, START_PORT + PORT_LENGTH);
         return new User(sender, hostname, port);
+    }
+
+    /**
+     * create byte[] from opcode and username
+     *
+     * @param opcode type of array
+     * @param sender name of client
+     * @return byte[]
+     */
+    public static byte[] createByteArray(int opcode, String sender) {
+        return Parser.createBasesArray(opcode, sender, "server");
+    }
+
+    /**
+     * to convert create Group to array of bytes
+     *
+     * @param opcode    opcode of byte[]
+     * @param sender    name of client, that create the group
+     * @param nameGroup The name of group
+     * @return byte[]
+     */
+    public static byte[] createByteArray(int opcode, String sender, String nameGroup) {
+        byte[] data = Parser.createBasesArray(opcode, sender, "server");
+        return Parser.mergeArrays(data, Parser.convertToBytes(nameGroup, Parser.GROUP_NAME_LENGTH));
+    }
+
+    /**
+     * convert a Message to array of bytes
+     *
+     * @param message message
+     * @return byte[]
+     */
+    public static byte[] createByteArray(Message message) {
+        byte[] data = Parser.createBasesArray(Parser.MESSAGE, message.getSender(), message.getReceiver());
+        // convert type to bytes and merge it into byte[]
+        data = Parser.mergeArrays(data, Parser.convertToBytes(message.getType(), Parser.TYPE_LENGTH));
+        // merge content into byte[]
+        data = mergeArrays(data, message.getContent());
+        return data;
     }
 
     /**
@@ -247,57 +307,23 @@ public class Parser {
     }
 
     /**
-     * convert byte[] to Message
+     * detect opcode
      *
-     * @param data array of byte
-     * @return Message
+     * @param data byte[] of opcode
+     * @return integer
      */
-    public static Message convertBytesToMessage(byte[] data) {
-        String sender = convertBytesToString(data, START_SENDER, START_SENDER + SENDER_LENGTH);
-        String receiver = convertBytesToString(data, START_RECEIVER, START_RECEIVER + RECEIVER_LENGTH);
-        int type = convertBytesToInt(data, START_TYPE, START_TYPE + TYPE_LENGTH);
-        byte[] content = Arrays.copyOfRange(data, Parser.START_MESSAGE, data.length);
-        return new Message(sender, receiver, type, content);
+    public static int detectType(byte[] data) {
+        return Parser.convertBytesToInt(data, START_OPCODE, Parser.START_OPCODE + Parser.OPCODE_LENGTH);
     }
 
     /**
-     * convert a Message to array of bytes
+     * to get name of group from byte[]
      *
-     * @param message message
-     * @return byte[]
+     * @param data byte[]
+     * @return String {@link String}
      */
-    public static byte[] createByteArray(Message message) {
-        byte[] data = Parser.createBasesArray(Parser.MESSAGE, message.getSender(), message.getReceiver());
-        // convert type to bytes and merge it into byte[]
-        data = Parser.mergeArrays(data, Parser.convertToBytes(message.getType(), Parser.TYPE_LENGTH));
-        // merge content into byte[]
-        data = mergeArrays(data, message.getContent());
-        return data;
-    }
-
-    /**
-     * create byte[] from opcode and username
-     *
-     * @param opcode type of array
-     * @param sender name of client
-     * @return byte[]
-     */
-    public static byte[] createByteArray(int opcode, String sender) {
-        return Parser.createBasesArray(opcode, sender, "server");
-    }
-
-    public static String getSenderFromBytes(byte[] data) {
-        return Parser.convertBytesToString(data, OPCODE_LENGTH, OPCODE_LENGTH + SENDER_LENGTH);
-    }
-
-    private static String deleteEmptyBytes(String text) {
-        int tmp = 0;
-        byte[] data = text.getBytes();
-        for (byte b : data) {
-            if (b == 0) tmp++;
-        }
-
-        return new String(Arrays.copyOfRange(data, tmp, data.length));
+    public static String getGroupNameFromBytes(byte[] data) {
+        return Parser.convertBytesToString(data, Parser.START_GROUP_NAME, Parser.START_GROUP_NAME + Parser.GROUP_NAME_LENGTH);
     }
 
     /**
@@ -310,13 +336,27 @@ public class Parser {
         return Parser.convertBytesToString(data, Parser.START_RECEIVER, Parser.START_RECEIVER + Parser.RECEIVER_LENGTH);
     }
 
+    public static String getSenderFromBytes(byte[] data) {
+        return Parser.convertBytesToString(data, OPCODE_LENGTH, OPCODE_LENGTH + SENDER_LENGTH);
+    }
+
     /**
-     * to get name of group from byte[]
+     * merge two arrays of bytes
      *
-     * @param data byte[]
-     * @return String {@link String}
+     * @param arr1 first array of bytes
+     * @param arr2 second array of bytes
+     * @return byte[]
      */
-    public static String getGroupNameFromBytes(byte[] data) {
-        return Parser.convertBytesToString(data, Parser.START_GROUP_NAME, Parser.START_GROUP_NAME + Parser.GROUP_NAME_LENGTH);
+    public static byte[] mergeArrays(byte[] arr1, byte[] arr2) {
+        byte[] merge = new byte[arr1.length + arr2.length];
+        int counter = 0;
+        for (int i = 0; i < arr1.length; i++) {
+            merge[i] = arr1[i];
+            counter++;
+        }
+        for (byte b : arr2) {
+            merge[counter++] = b;
+        }
+        return merge;
     }
 }
