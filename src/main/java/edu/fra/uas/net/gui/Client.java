@@ -96,11 +96,14 @@ public class Client extends JFrame {
     private final DefaultListModel<String> defaultListModel = new DefaultListModel<>();
     private final JScrollPane scrollPaneSendMessage = new JScrollPane();
     private final JScrollPane scrollPaneMessages = new JScrollPane();
+    private final JTextField textFieldCreateGroup = new JTextField();
 
     /**
      * Create the frame.
      */
     public Client() {
+        textFieldCreateGroup.setBounds(5, 45, 190, 30);
+        textFieldCreateGroup.setColumns(10);
         setTitle("Client-Chat");
         this.setResizable(false);
         this.initialize();
@@ -231,24 +234,27 @@ public class Client extends JFrame {
                 Constant.CLIENT_LIST_CLIENTS_WIDTH, Constant.BUTTON_HEIGHT);
         panelClientsList.add(btnCreateGroup);
 
-        btnSearch.setBounds(Constant.COMPONENT_X5, 45, Constant.CLIENT_LIST_CLIENTS_WIDTH, Constant.BUTTON_HEIGHT);
+        btnSearch.setBounds(5, 85, Constant.CLIENT_LIST_CLIENTS_WIDTH, Constant.BUTTON_HEIGHT);
         panelClientsList.add(btnSearch);
 
-        comboBoxUsernames.setBounds(Constant.COMPONENT_X5, 85,
+        comboBoxUsernames.setBounds(5, 125,
                 Constant.CLIENT_LIST_CLIENTS_WIDTH, Constant.BUTTON_HEIGHT);
+        comboBoxUsernames.addItem("select client");
         panelClientsList.add(comboBoxUsernames);
 
         listClients.setModel(defaultListModel);
-        listClients.setBounds(Constant.COMPONENT_X5, 125, Constant.CLIENT_LIST_CLIENTS_WIDTH, 393);
+        listClients.setBounds(5, 167, 190, 351);
 
         panelClientsList.add(listClients);
+
+        panelClientsList.add(textFieldCreateGroup);
 
         panelChatMessages.setBorder(new LineBorder(new Color(0, 0, 0)));
         panelChatMessages.setBounds(215, Constant.COMPONENT_Y5, 640, 530);
         panelChatMessages.setLayout(null);
         panelChat.add(panelChatMessages);
 
-        lblUsername.setFont(new Font("Dialog", Font.BOLD, 20));
+        lblUsername.setFont(new Font("Dialog", Font.BOLD, 18));
         lblUsername.setBounds(Constant.COMPONENT_X10, 10, 200, 15);
         panelChatMessages.add(lblUsername);
 
@@ -293,7 +299,7 @@ public class Client extends JFrame {
         jMenuItemExit.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
                 int dialogButton = JOptionPane.YES_NO_OPTION;
-                int dialogResult = JOptionPane.showConfirmDialog(null, "Do you want to close the Server ?",
+                int dialogResult = JOptionPane.showConfirmDialog(contentPane, "Do you want to close the Server ?",
                         "Exit Server", dialogButton);
                 if (dialogResult == 0) {
                     dispose();
@@ -305,7 +311,7 @@ public class Client extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 String infoMessage = "This Chat Client is developed by ";
                 infoMessage += "Mohammed Dawoud, Kaddour Alnaasan and Harsh Mukhiya";
-                JOptionPane.showMessageDialog(null, infoMessage, "About Chat_Server ", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(contentPane, infoMessage, "About Chat_Server ", JOptionPane.INFORMATION_MESSAGE);
             }
         });
         btnSaveConfig.addActionListener(new ActionListener() {
@@ -315,6 +321,10 @@ public class Client extends JFrame {
         });
         btnCreateGroup.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                String nameGroup = textFieldCreateGroup.getText();
+                if ((nameGroup != null) && (nameGroup.length() >= 3) && (nameGroup.length() <= 14)) {
+                    createGroup("G:" + nameGroup);
+                }
             }
         });
         btnSearch.addActionListener(new ActionListener() {
@@ -338,10 +348,9 @@ public class Client extends JFrame {
         comboBoxUsernames.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
                 String username = (String) comboBoxUsernames.getSelectedItem();
-                assert username != null;
-                if (!username.equalsIgnoreCase("select client")) {
+                if (username != null && !username.equalsIgnoreCase("select client")) {
                     currentUsername = username;
-                    addClientToListClients(username);
+                    addClientOrGroupToChatList(username);
                 }
             }
         });
@@ -355,12 +364,24 @@ public class Client extends JFrame {
         });
     }
 
+    private void createGroup(String nameGroup) {
+        try {
+            byte[] data = Parser.createByteArray(Parser.GROUP_CREATE, this.chatClient.getUser().getUsername(), nameGroup);
+            this.chatClient.sendRequest(data);
+            this.comboBoxUsernames.addItem(nameGroup);
+            this.defaultListModel.add(this.defaultListModel.getSize(), nameGroup);
+            this.textFieldCreateGroup.setText("");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     /**
      * to stop connection with server
      */
     private void stopClient() {
         int dialogButton = JOptionPane.YES_NO_OPTION;
-        int dialogResult = JOptionPane.showConfirmDialog(null, "Do you want to stop the client ?",
+        int dialogResult = JOptionPane.showConfirmDialog(contentPane, "Do you want to stop the client ?",
                 "Stop Client", dialogButton);
         if (dialogResult == 0) {
             tabbedPane.setEnabledAt(0, true);
@@ -421,24 +442,33 @@ public class Client extends JFrame {
     /**
      * to add name of client to list
      *
-     * @param username name of client
+     * @param name name of client
      */
-    private void addClientToListClients(String username) {
+    private void addClientOrGroupToChatList(String name) {
         boolean isFound = false;
-        String[] clients = new String[this.defaultListModel.getSize()];
+        String[] chats = new String[this.defaultListModel.getSize()];
         for (int i = 0; i < this.defaultListModel.getSize(); i++) {
-            clients[i] = this.defaultListModel.getElementAt(i);
+            chats[i] = this.defaultListModel.getElementAt(i);
         }
 
-        for (String client : clients) {
-            if (client.equalsIgnoreCase(username)) {
+        for (String client : chats) {
+            if (client.equalsIgnoreCase(name)) {
                 isFound = true;
                 break;
             }
         }
 
         if (!isFound) {
-            this.defaultListModel.add(this.defaultListModel.size(), username);
+            this.defaultListModel.add(this.defaultListModel.size(), name);
+        }
+
+        if ((name.charAt(0) == 'G') && (name.charAt(1) == ':')) {
+            try {
+                byte[] data = Parser.createByteArray(Parser.GROUP_JOIN, this.textFieldClientUsername.getText(), name);
+                this.chatClient.sendRequest(data);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -468,7 +498,7 @@ public class Client extends JFrame {
                 new Observer() {
                     @Override
                     public void updateClientMessage(String msg) {
-                        JOptionPane.showMessageDialog(null, msg, "Client-Info", JOptionPane.INFORMATION_MESSAGE);
+                        JOptionPane.showMessageDialog(contentPane, msg, "Client-Info", JOptionPane.INFORMATION_MESSAGE);
                     }
 
                     @Override
@@ -479,7 +509,7 @@ public class Client extends JFrame {
                     @Override
                     public void updateClientMessage(Message message) {
                         addMessageToHasMap(message);
-                        addClientToListClients(message.getSender());
+                        addClientOrGroupToChatList(message.getSender());
                         if (currentUsername != null && currentUsername.equalsIgnoreCase(message.getSender())) {
                             loadMessagesForSelectedClient(message.getSender());
                         }

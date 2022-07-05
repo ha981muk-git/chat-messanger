@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import edu.fra.uas.net.AbstractServer;
+import edu.fra.uas.net.model.Group;
 import edu.fra.uas.net.model.Message;
 import edu.fra.uas.net.model.User;
 import edu.fra.uas.net.utill.Log;
@@ -21,9 +22,10 @@ import edu.fra.uas.net.utill.Parser;
 public class ChatServer extends AbstractServer {
 
     private final Log log = new Log();
-    private List<User> users = new ArrayList<>();
-    private List<Message> messages = new ArrayList<>();
-    private Observable observable = new Observable();
+    private final List<User> users = new ArrayList<>();
+    private final List<Group> groups = new ArrayList<>();
+    private final List<Message> messages = new ArrayList<>();
+    private final Observable observable = new Observable();
 
     /**
      * default constructor
@@ -68,14 +70,32 @@ public class ChatServer extends AbstractServer {
                 case Parser.POLLER:
                     this.sendMessages(receivedData, srcAddress, srcPort);
                     break;
-                    case Parser.MESSAGE:
-                        Message message = Parser.convertBytesToMessage(receivedData);
-                        messages.add(message);
+                case Parser.MESSAGE:
+                    Message message = Parser.convertBytesToMessage(receivedData);
+                    messages.add(message);
+                    break;
+                case Parser.GROUP_CREATE:
+                    this.createGroup(receivedData);
+                    break;
+                case Parser.GROUP_JOIN:
+                    this.joinGroup(receivedData);
+                    break;
                 default:
                     break;
             }
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    private void joinGroup(byte[] data) {
+        String sender = Parser.getSenderFromBytes(data);
+        String nameGroup = Parser.getGroupNameFromBytes(data);
+        for (Group group : groups) {
+            if (nameGroup.equals(group.getName())) {
+                group.addUser(this.getUser(sender));
+                this.observable.fireUpdateAddGroup(group);
+            }
         }
     }
 
@@ -143,15 +163,22 @@ public class ChatServer extends AbstractServer {
         String sender = "server";
         String receiver = Parser.getSenderFromBytes(receivedData);
 
-        int length = users.size()-1;
+        int length = users.size() - 1;
+        if (!groups.isEmpty()) {
+            length += groups.size();
+        }
         int counter = 0;
-        if (length != 0){
+        if (length != 0) {
             String[] usernames = new String[length];
-            for (int i = 0; i < users.size(); i++) {
-                if (!users.get(i).getUsername().equals(receiver)) {
-                    usernames[counter] = users.get(i).getUsername();
+            for (User user : users) {
+                if (!user.getUsername().equals(receiver)) {
+                    usernames[counter] = user.getUsername();
                     counter++;
                 }
+            }
+            for (Group group : groups) {
+                usernames[counter] = group.getName();
+                counter++;
             }
 
             byte[] content = Arrays.toString(usernames).getBytes();
@@ -180,6 +207,15 @@ public class ChatServer extends AbstractServer {
                 break;
             }
         }
+    }
+
+    private void createGroup(byte[] data) {
+        String sender = Parser.getSenderFromBytes(data);
+        String nameGroup = Parser.getGroupNameFromBytes(data);
+        Group group = new Group(nameGroup);
+        group.addUser(this.getUser(sender));
+        groups.add(group);
+        observable.fireUpdateAddGroup(group);
     }
 
     /**

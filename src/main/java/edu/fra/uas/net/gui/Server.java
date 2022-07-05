@@ -58,7 +58,7 @@ public class Server extends JFrame {
     private final JMenuItem jMenuItemExit = new JMenuItem("Exit");
     private final JButton btnStartServer = new JButton("start Server");
     private final JButton btnStopServer = new JButton("stop");
-    private final JLabel lblIPAddress = new JLabel("IP Adresse:");
+    private final JLabel lblIPAddress = new JLabel("IP Address:");
     private final JTextField tfIPAddress = new JTextField();
     private final JLabel lblPort = new JLabel("Port:");
     private final JTextField tfPort = new JTextField();
@@ -87,13 +87,6 @@ public class Server extends JFrame {
      * @param args all variables
      */
     public static void main(String[] args) {
-
-        groups.add(new Group("Group1"));
-        groups.add(new Group("Group2"));
-        groups.add(new Group("Group3"));
-        groups.add(new Group("Group4"));
-        groups.add(new Group("Group5"));
-
         EventQueue.invokeLater(new Runnable() {
             public void run() {
                 try {
@@ -196,6 +189,11 @@ public class Server extends JFrame {
             public Class getColumnClass(int columnIndex) {
                 return columnTypes[columnIndex];
             }
+
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return column==0;
+            }
         };
 
         tableClients.setModel(tableModelClients);
@@ -206,6 +204,11 @@ public class Server extends JFrame {
 
             public Class getColumnClass(int columnIndex) {
                 return columnTypes[columnIndex];
+            }
+
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return column==0;
             }
         };
         tableGroups.setModel(tableModelGroups);
@@ -360,8 +363,19 @@ public class Server extends JFrame {
      * @author M.Dawoud
      */
     private void addGroupToTable(Group group) {
+        boolean isFound = false;
         DefaultTableModel tableModel = (DefaultTableModel) this.tableGroups.getModel();
-        tableModel.addRow(new Object[]{group.isToDelete(), group.getName(), group.getUsers().size()});
+        for (int i = 0; i < this.tableGroups.getRowCount(); i++) {
+            String nameGroup = this.tableGroups.getValueAt(i, 1).toString();
+            if (group.getName().equals(nameGroup)) {
+                tableModel.setValueAt(group.getUsers().size(),i, 2);
+                isFound = true;
+                break;
+            }
+        }
+        if (!isFound){
+            tableModel.addRow(new Object[]{group.isToDelete(), group.getName(), group.getUsers().size()});
+        }
     }
 
     /**
