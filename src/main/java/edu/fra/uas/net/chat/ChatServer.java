@@ -3,7 +3,9 @@ package edu.fra.uas.net.chat;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import edu.fra.uas.net.AbstractServer;
 import edu.fra.uas.net.model.Group;
@@ -24,7 +26,7 @@ public class ChatServer extends AbstractServer {
     private final Log log = new Log();
     private final List<User> users = new ArrayList<>();
     private final List<Group> groups = new ArrayList<>();
-    private final List<Message> messages = new ArrayList<>();
+    private final Map<String, List<byte[]>> messages = new HashMap<>();
     private final Observable observable = new Observable();
 
     /**
@@ -71,8 +73,7 @@ public class ChatServer extends AbstractServer {
                     this.sendMessages(receivedData, srcAddress, srcPort);
                     break;
                 case Parser.MESSAGE:
-                    Message message = Parser.convertBytesToMessage(receivedData);
-                    messages.add(message);
+                    this.addMessageToDatabase(receivedData);
                     break;
                 case Parser.GROUP_CREATE:
                     this.createGroup(receivedData);
@@ -86,6 +87,27 @@ public class ChatServer extends AbstractServer {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * to add byte[] into HashMap{Sender => List:byte[] }
+     *
+     * @param data byte[]
+     */
+    private void addMessageToDatabase(byte[] data) {
+        String receiver = Parser.getReceiverFromBytes(data);
+        if (!messages.containsKey(receiver)) {
+            messages.put(receiver, null);
+        }
+
+        List<byte[]> receiverMessages = messages.get(receiver);
+
+        if (receiverMessages == null) {
+            receiverMessages = new ArrayList<>();
+        }
+
+        receiverMessages.add(data);
+        messages.put(receiver, receiverMessages);
     }
 
     private void joinGroup(byte[] data) {
@@ -132,8 +154,8 @@ public class ChatServer extends AbstractServer {
         String sender = "server";
         String receiver = client.getUsername();
         String msg = "You are connected to server!";
-        Message message = new Message(sender, receiver, Parser.MESSAGE_TYPE_REGISTER, msg.getBytes());
-        messages.add(message);
+        this.addMessageToDatabase(
+                Parser.createByteArray(new Message(sender, receiver, Parser.MESSAGE_TYPE_REGISTER, msg.getBytes())));
     }
 
     /**
@@ -150,8 +172,8 @@ public class ChatServer extends AbstractServer {
         observable.fireUpdateDeleteClient(clientUsername);
         String sender = "server";
         String msg = "You are disconnected to server!";
-        Message message = new Message(sender, clientUsername, Parser.MESSAGE_TYPE_DEREGISTER, msg.getBytes());
-        messages.add(message);
+        this.addMessageToDatabase(Parser.createByteArray(
+                new Message(sender, clientUsername, Parser.MESSAGE_TYPE_DEREGISTER, msg.getBytes())));
     }
 
     /**
@@ -182,8 +204,8 @@ public class ChatServer extends AbstractServer {
             }
 
             byte[] content = Arrays.toString(usernames).getBytes();
-            Message message = new Message(sender, receiver, Parser.MESSAGE_TYPE_SEARCH, content);
-            messages.add(message);
+            this.addMessageToDatabase(
+                    Parser.createByteArray(new Message(sender, receiver, Parser.MESSAGE_TYPE_SEARCH, content)));
         }
     }
 
@@ -198,13 +220,13 @@ public class ChatServer extends AbstractServer {
      *                     failed or interrupted I/O operations.
      */
     private void sendMessages(byte[] data, String srcAddress, int srcPort) throws IOException {
+        // get target-client
         String targetClient = Parser.getSenderFromBytes(data);
-        for (int i = 0; i < messages.size(); i++) {
-            Message message = messages.get(i);
-            if (message.getReceiver().equals(targetClient)) {
-                this.sendResponse(Parser.createByteArray(message), srcAddress, srcPort);
-                messages.remove(message);
-                break;
+        if (messages.containsKey(targetClient)) { // if client has messages
+            List<byte[]> targetMessages = messages.get(targetClient); // get all messages of target-client
+            if (targetMessages != null && !targetMessages.isEmpty()) {
+                this.sendResponse(targetMessages.get(0), srcAddress, srcPort); // send the oldest message
+                targetMessages.remove(0); // remove message
             }
         }
     }
