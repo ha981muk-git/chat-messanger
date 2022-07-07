@@ -110,17 +110,6 @@ public class ChatServer extends AbstractServer {
         messages.put(receiver, receiverMessages);
     }
 
-    private void joinGroup(byte[] data) {
-        String sender = Parser.getSenderFromBytes(data);
-        String nameGroup = Parser.getGroupNameFromBytes(data);
-        for (Group group : groups) {
-            if (nameGroup.equals(group.getName())) {
-                group.addUser(this.getUser(sender));
-                this.observable.fireUpdateAddGroup(group);
-            }
-        }
-    }
-
     /**
      * to attach Observer
      *
@@ -239,6 +228,15 @@ public class ChatServer extends AbstractServer {
         groups.add(group);
         observable.fireUpdateAddGroup(group);
     }
+    
+    private void joinGroup(byte[] data) {
+        String sender = Parser.getSenderFromBytes(data);
+        String nameGroup = Parser.getGroupNameFromBytes(data);
+        Group group = this.getGroup(nameGroup);
+        if (!group.getUsers().contains(this.getUser(sender))) {
+            group.addUser(this.getUser(sender));
+        }
+    }
 
     /**
      * to get client by his username
@@ -250,6 +248,21 @@ public class ChatServer extends AbstractServer {
         for (User user : users) {
             if (sender.equals(user.getUsername())) {
                 return user;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * to get group by name
+     *
+     * @param name name of group
+     * @return {@link Group}
+     */
+    private Group getGroup(String name) {
+        for (Group group : groups) {
+            if (name.equals(group.getName())) {
+                return group;
             }
         }
         return null;
