@@ -9,9 +9,11 @@ public class Message {
 
     private String sender;
     private String receiver;
+
+    private String nameGroup;
+
     private int type;
     private byte[] content;
-
     /**
      * default constructor
      *
@@ -24,6 +26,7 @@ public class Message {
         super();
         this.sender = sender;
         this.receiver = receiver;
+        this.nameGroup = "null";
         this.type = type;
         this.content = content;
     }
@@ -42,6 +45,14 @@ public class Message {
 
     public void setReceiver(String receiver) {
         this.receiver = receiver;
+    }
+
+    public String getNameGroup() {
+        return nameGroup;
+    }
+
+    public void setNameGroup(String nameGroup) {
+        this.nameGroup = nameGroup;
     }
 
     public int getType() {
