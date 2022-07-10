@@ -231,9 +231,19 @@ public class Parser {
     public static Message convertBytesToMessage(byte[] data) {
         String sender = convertBytesToString(data, START_SENDER, START_SENDER + SENDER_LENGTH);
         String receiver = convertBytesToString(data, START_RECEIVER, START_RECEIVER + RECEIVER_LENGTH);
-        int type = convertBytesToInt(data, START_TYPE, START_TYPE + TYPE_LENGTH);
-        byte[] content = Arrays.copyOfRange(data, Parser.START_MESSAGE, data.length);
-        return new Message(sender, receiver, type, content);
+        if (Parser.detectType(data) == Parser.MESSAGE) {
+            int type = convertBytesToInt(data, START_TYPE, START_TYPE + TYPE_LENGTH);
+            byte[] content = Arrays.copyOfRange(data, Parser.START_MESSAGE, data.length);
+            return new Message(sender, receiver, type, content);
+        }
+
+        String nameGroup = Parser.convertBytesToString(data, START_GROUP_NAME, START_GROUP_NAME + GROUP_NAME_LENGTH);
+        int type = Parser.convertBytesToInt(data, START_TYPE + GROUP_NAME_LENGTH,
+                START_TYPE + TYPE_LENGTH + GROUP_NAME_LENGTH);
+        byte[] content = Arrays.copyOfRange(data, Parser.START_MESSAGE + GROUP_NAME_LENGTH, data.length);
+        Message message = new Message(sender, receiver, type, content);
+        message.setNameGroup(nameGroup);
+        return message;
     }
 
     /**
@@ -280,11 +290,17 @@ public class Parser {
      * @return byte[]
      */
     public static byte[] createByteArray(Message message) {
-        byte[] data = Parser.createBasesArray(Parser.MESSAGE, message.getSender(), message.getReceiver());
+        byte[] data;
+        if (!message.getNameGroup().equals("null")){
+            data = Parser.createBasesArray(Parser.GROUP_MESSAGE, message.getSender(), message.getReceiver());
+            data = Parser.mergeArrays(data, Parser.convertToBytes(message.getNameGroup(), Parser.GROUP_NAME_LENGTH));
+        } else {
+            data = Parser.createBasesArray(Parser.MESSAGE, message.getSender(), message.getReceiver());
+        }
         // convert type to bytes and merge it into byte[]
         data = Parser.mergeArrays(data, Parser.convertToBytes(message.getType(), Parser.TYPE_LENGTH));
         // merge content into byte[]
-        data = mergeArrays(data, message.getContent());
+        data = Parser.mergeArrays(data, message.getContent());
         return data;
     }
 
@@ -323,7 +339,8 @@ public class Parser {
      * @return String {@link String}
      */
     public static String getGroupNameFromBytes(byte[] data) {
-        return Parser.convertBytesToString(data, Parser.START_GROUP_NAME, Parser.START_GROUP_NAME + Parser.GROUP_NAME_LENGTH);
+        return Parser.convertBytesToString(data, Parser.START_GROUP_NAME,
+                Parser.START_GROUP_NAME + Parser.GROUP_NAME_LENGTH);
     }
 
     /**

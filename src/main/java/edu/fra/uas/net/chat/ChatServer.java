@@ -81,6 +81,9 @@ public class ChatServer extends AbstractServer {
                 case Parser.GROUP_JOIN:
                     this.joinGroup(receivedData);
                     break;
+                case Parser.GROUP_MESSAGE:
+                    this.forwardMessageToClients(receivedData);
+                    break;
                 default:
                     break;
             }
@@ -143,8 +146,8 @@ public class ChatServer extends AbstractServer {
         String sender = "server";
         String receiver = client.getUsername();
         String msg = "You are connected to server!";
-        this.addMessageToDatabase(
-                Parser.createByteArray(new Message(sender, receiver, Parser.MESSAGE_TYPE_REGISTER, msg.getBytes())));
+        Message message = new Message(sender, receiver, Parser.MESSAGE_TYPE_REGISTER, msg.getBytes());
+        this.addMessageToDatabase(Parser.createByteArray(message));
     }
 
     /**
@@ -228,13 +231,35 @@ public class ChatServer extends AbstractServer {
         groups.add(group);
         observable.fireUpdateAddGroup(group);
     }
-    
+
     private void joinGroup(byte[] data) {
         String sender = Parser.getSenderFromBytes(data);
         String nameGroup = Parser.getGroupNameFromBytes(data);
         Group group = this.getGroup(nameGroup);
         if (!group.getUsers().contains(this.getUser(sender))) {
             group.addUser(this.getUser(sender));
+            this.observable.fireUpdateAddGroup(group);
+        }
+    }
+
+    /**
+     * to forward message to all group-members
+     *
+     * @param data byte[]
+     */
+    private void forwardMessageToClients(byte[] data) {
+        String sender = Parser.getSenderFromBytes(data);
+        Message message = Parser.convertBytesToMessage(data);
+        String groupName = Parser.getGroupNameFromBytes(data);
+        message.setNameGroup(groupName);
+        Group group = this.getGroup(groupName);
+        if (group != null) {
+            for (User user : group.getUsers()) {
+                if (!user.getUsername().equals(sender)) {
+                    message.setReceiver(user.getUsername());
+                    this.addMessageToDatabase(Parser.createByteArray(message));
+                }
+            }
         }
     }
 
