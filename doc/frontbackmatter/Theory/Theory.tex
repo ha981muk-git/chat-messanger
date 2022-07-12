@@ -143,83 +143,174 @@
     \section{Our Protocol Segment Format}\label{sec:our protocol}
     Our  basic protocol segment  consist of opcode, sender and receiver. 
     The bases are divided into different bytes arrays.
-    The first 4-bytes of protocol segment is reservered for opcode which whose
-     basic functionality is to store  functionality like register,deregister, search, 
-     poller, message, create group, join group, leave group and group message.
-    The secound chunk of 16 bytes presents IP address of the sender computer. 
+    The first 4-bytes of protocol segment is reserved for opcode which whose
+    basic functionality is to store  functionality like register,deregister, search,
+    poller, message, create group, join group, leave group and group message.
+    The second chunk of 16 bytes presents IP address of the sender computer.
     The third chunk of 16 bytes reserved for the receiver IP Address.
     \medskip
     
     \noindent
+    \subsection{Register}\label{subsec:register}
     To register the client with the server, the client must send the basic protocol, host
-     name, and port number to the server. 
+    name, and port number to the server.
     The 0x01 opcode is required to register a client with the server using this protocol.
     The hostname requires 16 bytes of data to be stored as part of the protocol and 
     the port number requires 4 bytes of data.
-    To log out, the client  needs to send the opcode 0x02 to server  with the sender and
+    
+		    \begin{figure}
+		    	\centering
+		    	\includegraphics[width=0.7\textwidth]{gfx/1.8.1_Register_Client}
+		     %	\caption{Register Client}
+		    	\label{fig:register-server}
+		    \end{figure}
+    
+
+    \subsection{Deregister}\label{subsec:deregister}
+    To deregister, the client  needs to send the opcode 0x02 to server  with the sender and
     recipient IP address.
     Then the server logs off the client.
-     \medskip
     
-    \noindent
+		    \begin{figure}
+		    	\centering
+		    		\includegraphics[width=0.7\textwidth]{gfx/1.8.2_Deregister_Client}
+		    	%	\caption{Register Client}
+		    	\label{fig:deregister-client}
+		    \end{figure}
+
+
+    \subsection{Search Clients}\label{subsec:search}
+    In order to get list of clienst, client actually need to send  the opcode 0x03 to  the
+    server.
+    After receiving this opcode, client get the all of all client on the server and will be
+    able to send message to the different client.
+    
+		    \begin{figure}
+		    	\centering
+		    
+		    	\includegraphics[width=0.7\textwidth]{gfx/1.8.3_Client_List}
+		    	%	\caption{Register Client}
+		    	\label{fig:client-list}
+		    \end{figure}
+
+
+    \subsection{Poller}\label{subsec:poller}
+    Poller is actually  send a signal to server.
+    If any new message is received by the server.
+    If server has received new messages, then it will return messages to client.
+    
+			    \begin{figure}
+			    	\centering
+			    	\includegraphics[width=0.7\textwidth]{gfx/1.8.4_Poller}
+			    	%	\caption{Register Client}
+			    	\label{fig:rpoller}
+			    \end{figure}
+
+
+    \subsection{Message}\label{subsec:message}
     If the sender wants to send data to the receiver, it must specify the base protocol and type
     the content and the content itself, where the type of data is stored in 4 data bytes and the
-    the content can have any length. 
+    the content can have any length.
+    \medskip
+
+    \noindent
+
  
     The type of  data has five different type.
     \begin{itemize}
-    	\item Message type register is presended by 0x01.
+    	\item Message type register is presented by 0x01.
     	\item Message type deregister is given  by 0x02.
     	\item Message type search is reserved as 0x03.
     	\item Message type message and file is given by 0x04 and 0x05 respectively.
     \end{itemize}
-	 \medskip
-	
-	\noindent
-	To obtain a list of clients, the sender must use the opcode 0x03 with the IP address of the sender 
+
+			\begin{figure}
+				\centering
+				\includegraphics[width=0.7\textwidth]{gfx/1.8.5_Send_Opcode_Message}
+				%	\caption{Register Client}
+				\label{fig:send-opcode-message}
+			\end{figure}
+
+    \subsection{Create Group}\label{subsec:create}
+	To obtain a list of clients, the sender must use the opcode 0x03 with the IP address of the sender
 	and the recipient and the name of the group.
-	To create a group, sender needs to implement base protocal with 0x06 opcode and name 
+	To create a group, sender needs to implement base protocol with 0x06 opcode and name
 	of the group.Usually, the hostname and name of group takes 16 bytes of data.
-	In the same way, sender can to apply  base protocal with 0x07 opcode and name 
-	of the group to join the group.
-	By just change opcode of above line to 0x08, sender can easily leave the group.
 	
+			\begin{figure}
+				\centering
+				\includegraphics[width=0.7\textwidth]{gfx/1.8.6_Group_Create}
+				%	\caption{Register Client}
+				\label{fig:group-create}
+			\end{figure}
+
+    \subsection{Join Group}\label{subsec:join}
+	In the same way, sender can to apply  base protocol with 0x07 opcode and name
+	of the group to join the group.
+	
+			\begin{figure}
+				\centering
+				\includegraphics[width=0.7\textwidth]{gfx/1.8.7_Join_Group}
+				%	\caption{Register Client}
+				\label{fig:join-group}
+			\end{figure}
+
+    \subsection{Leave Group}\label{subsec:leave}
+	By just changing opcode of above line to 0x08, sender can easily leave the group.
+	
+				\begin{figure}
+					\centering
+							\includegraphics[width=0.7\textwidth]{gfx/1.8.8_Leave_Group}
+					%	\caption{Register Client}
+					\label{fig:leave-group}
+				\end{figure}
+
+    \subsection{Send Message}\label{subsec:send}
 	To send a message to a group, the sender who wants to send data to the group must specify
-	 the basic protocol  with opcode 0x09, in the addition of the name of the group of 16 bytes 
-	 of data and the type of the content and the content itself, where the data type is stored 
-	 in 4 data bytes and where the content can be of any length. 
+    the basic protocol  with opcode 0x09, in the addition of the name of the group of 16 bytes
+    of data and the type of the content and the content itself, where the data type is stored
+    in 4 data bytes and where the content can be of any length.
+    
+		    \begin{figure}
+		    	\centering
+		    		\includegraphics[width=0.7\textwidth]{gfx/1.8.9_Send_Message}
+		    	%	\caption{Register Client}
+		    	\label{fig:send-message}
+		    \end{figure}
     \medskip
 
     \noindent
-    
+
+
     \section{Improvement in Application}\label{sec:improvement in application}
 
-    \subsection{API-implementation}\label{subsec:api-implementation}
+    \subsection{API-implementation}\label{subsec:apiimplementation}
     To further improve our application in the future, we would use an API for frontend,
     backend and database and to separate frontend, backend and database from each other.
-    
-    \subsection{Usable on multiple devices} \label{subsec:usable-on-multiple-devices}
+
+    \subsection{Usable on multiple devices} \label{subsec:usableonmultipledevices}
     The current version of our application can be used on Linux, Mac and Windows.
     In the upcoming version we will bring it to other devices like Android, tablets, etc.
 
-    \subsection{Implementation  of database}\label{subsec:implementation-database}
-    Our team will integrate this application to store data, backup client and server data and 
+    \subsection{Implementation  of database}\label{subsec:implementationdatabase}
+    Our team will integrate this application to store data, backup client and server data and
     reimplementation of the data.
 
-    \subsection{Implementation on higher protocol}\label{subsec:implementation-on-higher-protocol}
-    To use it on a higher protocol, our team will apply it with the https protocol. 
+    \subsection{Implementation on higher protocol}\label{subsec:implementationonhigherprotocol}
+    To use it on a higher protocol, our team will apply it with the https protocol.
     so we can use it in websites and browsers.
 
 
-	\subsection{Overall validation }\label{subsec:validation overall}
-	To improve the viability of our application, we will add some validation features
-	 to make the application more realistic and error-free.
-	And know that users are getting the right data.
-	
+    \subsection{Overall validation}\label{subsec:validationoverall}
+    To improve the viability of our application, we will add some validation features
+    to make the application more realistic and error-free.
+    And know that users are getting the right data.
 
-   \subsection{Validation of port number}\label{subsec:validate of port number}
-	We would add some functions to confirm and validate the port number on the devices
-	that the data is transferred to the right person and device.
+
+    \subsection{Validation of port number}\label{subsec:validateofportnumber}
+    We would add some functions to confirm and validate the port number on the devices
+    that the data is transferred to the right person and device.
+
    
 
 

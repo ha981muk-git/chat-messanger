@@ -257,9 +257,11 @@ public class Client extends JFrame {
         lblUsername.setFont(new Font("Dialog", Font.BOLD, 18));
         lblUsername.setBounds(Constant.COMPONENT_X10, 10, 200, 15);
         panelChatMessages.add(lblUsername);
+        btnFileAdd.setEnabled(false);
 
         btnFileAdd.setBounds(508, 445, 120, Constant.BUTTON_HEIGHT);
         panelChatMessages.add(btnFileAdd);
+        btnMessageSend.setEnabled(false);
 
         btnMessageSend.setBounds(508, 485, 120, Constant.BUTTON_HEIGHT);
         panelChatMessages.add(btnMessageSend);
@@ -272,6 +274,7 @@ public class Client extends JFrame {
         scrollPaneSendMessage.setBounds(Constant.COMPONENT_X10, 445, 485, 70);
 
         panelChatMessages.add(scrollPaneSendMessage);
+        textAreaSendMessage.setEnabled(false);
         scrollPaneSendMessage.setViewportView(textAreaSendMessage);
     }
 
@@ -311,11 +314,13 @@ public class Client extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 String infoMessage = "This Chat Client is developed by ";
                 infoMessage += "Mohammed Dawoud, Kaddour Alnaasan and Harsh Mukhiya";
-                JOptionPane.showMessageDialog(contentPane, infoMessage, "About Chat_Server ", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(contentPane, infoMessage,
+                        "About Chat_Server ", JOptionPane.INFORMATION_MESSAGE);
             }
         });
         btnSaveConfig.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                setTitle(textFieldClientUsername.getText() + " - Client-Chat");
                 startClient();
             }
         });
@@ -360,13 +365,16 @@ public class Client extends JFrame {
                 currentUsername = listClients.getSelectedValue();
                 lblUsername.setText(currentUsername);
                 loadMessagesForSelectedClient(currentUsername);
+                textAreaSendMessage.setEnabled(true);
+                btnMessageSend.setEnabled(true);
             }
         });
     }
 
     private void createGroup(String nameGroup) {
         try {
-            byte[] data = Parser.createByteArray(Parser.GROUP_CREATE, this.chatClient.getUser().getUsername(), nameGroup);
+            byte[] data = Parser.createByteArray(
+                    Parser.GROUP_CREATE, this.chatClient.getUser().getUsername(), nameGroup);
             this.chatClient.sendRequest(data);
             this.comboBoxUsernames.addItem(nameGroup);
             this.defaultListModel.add(this.defaultListModel.getSize(), nameGroup);
@@ -425,13 +433,16 @@ public class Client extends JFrame {
             String receiver = this.currentUsername;
             String msg = this.textAreaSendMessage.getText();
             Message message = new Message(sender, receiver, Parser.MESSAGE_TYPE_MESSAGE, msg.getBytes());
-            List<Message> clientMessages = this.messages.get(receiver);
-            if (clientMessages == null) {
-                clientMessages = new ArrayList<>();
+
+            if (currentUsername.contains("G:")) {
+                message.setReceiver("server");
+                message.setNameGroup(receiver);
             }
-            clientMessages.add(message);
-            messages.put(receiver, clientMessages);
+            // send Message to server
             chatClient.sendMessage(message);
+            // save message to stack
+            this.addMessageToHasMap(message);
+            // clear message area
             this.textAreaSendMessage.setText("");
             this.loadMessagesForSelectedClient(receiver);
         } catch (IOException e) {
@@ -460,14 +471,14 @@ public class Client extends JFrame {
 
         if (!isFound) {
             this.defaultListModel.add(this.defaultListModel.size(), name);
-        }
-
-        if ((name.charAt(0) == 'G') && (name.charAt(1) == ':')) {
-            try {
-                byte[] data = Parser.createByteArray(Parser.GROUP_JOIN, this.textFieldClientUsername.getText(), name);
-                this.chatClient.sendRequest(data);
-            } catch (IOException e) {
-                e.printStackTrace();
+            
+            if ((name.charAt(0) == 'G') && (name.charAt(1) == ':')) {
+                try {
+                    byte[] data = Parser.createByteArray(Parser.GROUP_JOIN, this.textFieldClientUsername.getText(), name);
+                    this.chatClient.sendRequest(data);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
@@ -509,9 +520,16 @@ public class Client extends JFrame {
                     @Override
                     public void updateClientMessage(Message message) {
                         addMessageToHasMap(message);
-                        addClientOrGroupToChatList(message.getSender());
-                        if (currentUsername != null && currentUsername.equalsIgnoreCase(message.getSender())) {
-                            loadMessagesForSelectedClient(message.getSender());
+                        if (message.getNameGroup().equals("null")) {
+                            addClientOrGroupToChatList(message.getSender());
+                            if (currentUsername != null && currentUsername.equalsIgnoreCase(message.getSender())) {
+                                loadMessagesForSelectedClient(message.getSender());
+                            }
+                        } else {
+                            addClientOrGroupToChatList(message.getNameGroup());
+                            if (currentUsername != null && currentUsername.equalsIgnoreCase(message.getNameGroup())) {
+                                loadMessagesForSelectedClient(message.getNameGroup());
+                            }
                         }
                     }
                 }
@@ -537,11 +555,22 @@ public class Client extends JFrame {
      * @param message {@link Message}
      */
     private void addMessageToHasMap(Message message) {
-        List<Message> clientMessages = messages.get(message.getSender());
+        String client = message.getSender();
+
+        if (!message.getNameGroup().equals("null")) {
+            client = message.getNameGroup();
+        }
+
+        if (!messages.containsKey(client)) {
+            messages.put(client, null);
+        }
+
+        List<Message> clientMessages = messages.get(client);
         if (clientMessages == null) {
             clientMessages = new ArrayList<>();
         }
+
         clientMessages.add(message);
-        messages.put(message.getSender(), clientMessages);
+        messages.put(client, clientMessages);
     }
 }
