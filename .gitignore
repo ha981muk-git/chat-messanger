@@ -233,3 +233,5 @@ doc/thesis.synctex.gz
 *.blg
 .idea
 *.toc
+doc/thesis-blx.bib
+doc/thesis.lof
