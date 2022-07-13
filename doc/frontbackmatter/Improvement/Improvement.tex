@@ -27,27 +27,53 @@ Even if you don't need to process large amounts of data yourself (yet), database
 smaller amounts of data. With the capacity to handle so much data, a well-designed database can
 serve you for many years as it grows with you.
 
-\section {Vidioconferenz }\label{sec:Vidioconferenz}
+
+\section{Application-Programming-Interface}\label{sec:application-programming-interface}
+it enables data exchange between the server and the client. The API concept was designed by Roy
+Fielding in 1994.
+It uses http requests to access information via GET, POST, PUT and DELETE\@.
+When using REST interface, a clean separation is created between the backend (server) and the
+frontend (client).
+In API, (de-) serialization is passed, and it is done by determining the media-type of REST interface.
+API has different layers, based on the architecture of the API the layer is determined
+
+\begin{itemize}
+    \item Level 0 "The Swamp of POX": the exchange of information is done only through an API\@.
+    \item Level 1 "Resources": an API must be implemented for each object.
+    \item Level 2 "HTTP Verbs": the http verbs (GET, POST, PUT and DELETE) are implemented each API
+    \item Level 3 "Hypermedia Controls": a URL is returned for each child object instead of the object.
+\end{itemize}
+\noiondent
+The disadvantage of layer "0" and "1" is that only the POST request is implemented in the API,
+which means you can read, write, edit and delete the data with the same request.
+This means that whoever has read permission can also edit data.
+The advantage of layer "2" is that with the help of HTTP request can be controlled which right has
+this request.
+Layer "3" brings a special advantage that the nested-objects are fetched with an API and not packed
+in the root object.
+
+\section {Videoconferencing}\label{sec:vidioconferenz}
 Video conferencing can be very important in our project in the future, because it has many advantages
-for companies and people, for example 
+for companies and people, for example
 1-Video conferencing can easily overcome spatial distances. Location-independent communication
 saves valuable time and long journeys, and can thus speed up workflows and decision-making processes
 enormously.
 2-The video conferencing is very helpful for people working abroad and also for students studying abroad.
-so that you can contact with their families. 
+so that you can contact with their families.
 You can add the ability of screen sharing for video conferencing, so that you can have multiple applications
 in one application.
 
-\section {validation  }\label{sec:validation }
-Data validation may save the day of computer programmers, whatever programming language they use. 
-In fact, processing invalid data is a waste of resources at best, and a drama at worst if the problem 
+
+\section{Validation}\label{sec:validation}
+Data validation may save the day of computer programmers, whatever programming language they use.
+In fact, processing invalid data is a waste of resources at best, and a drama at worst if the problem
 remains unnoticed and wrong results are used for business. Answer Set Programming is not an exception,
 but the quest for better and better performance resulted in systems that essentially do not validate
 data in any way. Even under the simplistic assumption that input and output data are eventually
 validated by external tools, invalid data may appear in other portions of the program, and go
 undetected until some other module of the designed software suddenly breaks.
-an example about validation for our project is 
-that you use validation for username. 
+an example about validation for our project is
+that you use validation for username.
 username must contain a minimum of 3 letters and a maximum of 16 letters, if the user enters more
 than 16 letters or less than 3 letters, the program must show a pale.
 
